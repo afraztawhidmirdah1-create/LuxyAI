@@ -1,0 +1,17 @@
+{
+  "name": "luxy-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Luxy AI - Made by Afraz Studio",
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/core": "latest",
+    "@capacitor/filesystem": "latest",
+    "@capacitor/share": "latest",
+    "@capacitor-community/speech-recognition": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "latest",
+    "@capacitor/cli": "latest"
+  }
+}

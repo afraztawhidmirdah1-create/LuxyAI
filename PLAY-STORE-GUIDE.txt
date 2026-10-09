@@ -1,0 +1,54 @@
+LUXY AI - HOW TO GET IT ON GOOGLE PLAY
+Made by Afraz Studio. Package name: com.afrazstudio.luxyai
+
+Luxy AI needs NO account, NO sign-in and NO API key. Nothing to set up inside the app.
+Google Play needs a signed .aab file. This project builds it for you on GitHub, free, no Android Studio.
+
+STEP 1 - Upload to GitHub
+Create a repo and upload EVERYTHING in this zip (keep the folders, including the hidden .github folder).
+
+STEP 2 - Make your signing key (once, keep it safe forever)
+On a computer or Termux:
+  keytool -genkeypair -v -keystore luxy.jks -alias luxy -keyalg RSA -keysize 2048 -validity 10000
+Use the SAME password for the store and the key. Never lose this file.
+Then turn it into text:  base64 -w0 luxy.jks
+
+STEP 3 - Add 3 secrets in GitHub
+Repo > Settings > Secrets and variables > Actions > New repository secret:
+  KEYSTORE_BASE64    the long text from step 2
+  KEYSTORE_PASSWORD  your password
+  KEY_ALIAS          luxy
+
+STEP 4 - Build
+Repo > Actions > "Build Luxy AI for Google Play" > Run workflow. Wait for the green tick.
+Download "Luxy-AI-builds": app-debug.apk (test on your phone) and luxy-ai-release.aab (upload to Play).
+
+STEP 5 - Google Play Console
+Create app > upload luxy-ai-release.aab. Copy the texts from play-store-listing.json.
+Privacy policy: turn on GitHub Pages (Settings > Pages > main branch > /docs), put your email in
+docs/privacy-policy.html, and use https://USERNAME.github.io/REPO/privacy-policy.html
+Also needed: a 1024x500 feature graphic, 2-8 phone screenshots, and the content rating, data safety
+and AI-content questionnaires. In Data safety answer: no account required.
+
+HOW LUXY AI WORKS NOW
+- First launch: the user picks "Save my chats on this device" or "Try with no history" (changeable in Settings).
+- Smart answers: Luxy AI uses several free AI engines one after another (plus live web search), so it keeps
+  working if one is busy. Free services can be slow or rate-limited at busy times.
+- Create: start a message with a symbol or use a command.
+    🎨 or /image idea                  picture
+    🎬 or /video idea, 10 seconds      animated clip, 3 to 10 seconds (camera motion, fades, sparkles, captions)
+    attach a photo and say "animate"   moves your own photo
+    📖 or /comic story, 8 pages        comic book
+    /video topic, 5 minutes            long narrated slideshow video
+  Other symbols: 🧮 solve, 🔎 research, 🌍 translate, 📝 write, 💻 code, 💡 explain simply. Type "symbols" in the app.
+- Animated clips are AI pictures moved by the app (not AI motion video). They save as .webm.
+
+OPTIONAL
+- www/config.js: set updateUrl to your own GitHub raw index.html link for daily self-update.
+  Only point it at a repo you control. Google Play policies on self-updating code are strict.
+
+NOTES
+- Each build raises the version number automatically, so you can upload updates.
+- Test the APK on a real phone before submitting. Google may require a closed test first for new personal accounts.
+- Google raises the required Android target level every year. This project always installs the newest
+  Capacitor. If the build fails, open the Actions log and send it to me.

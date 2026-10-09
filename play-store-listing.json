@@ -1,0 +1,76 @@
+{
+  "_note": "Copy these values into Google Play Console > Grow > Store presence > Main store listing. Replace every REPLACE_ME value.",
+  "packageName": "com.afrazstudio.luxyai",
+  "appName": "Luxy AI",
+  "developerName": "Afraz Studio",
+  "defaultLanguage": "en-US",
+  "listings": {
+    "en-US": {
+      "title": "Luxy AI",
+      "short": "Free AI for physics, pictures, 10s animations, comics. English, Bengali, Hindi.",
+      "full": "Luxy AI is your smart everyday assistant, made by Afraz Studio. No account and no sign-in needed.\n\nAsk anything in English, Bengali (বাংলা) or Hindi and get clear, professional answers that are easy to understand.\n\nWHAT YOU CAN DO\n• Solve physics, maths and chemistry step by step with proper symbols (Δ, θ, λ, v₀, m/s²)\n• Create AI pictures and animated clips of up to 10 seconds\n• Turn your own photo into a moving clip\n• Write comic books with pictures from one sentence\n• Live news, weather and currency rates\n• Talk with voice: female or male voice\n• Quick tools: notes, to-do list, unit conversion, passwords\n• Study, coding, writing and business modes\n• Choose to save your chats on your device, or try with no history at all\n\nAnswers can contain mistakes, so please check important information."
+    },
+    "bn-BD": {
+      "title": "Luxy AI",
+      "short": "পদার্থবিজ্ঞান, ছবি, ১০ সেকেন্ডের অ্যানিমেশন ও কমিক। ইংরেজি, বাংলা, হিন্দি।",
+      "full": "Luxy AI আপনার প্রতিদিনের স্মার্ট সহকারী, তৈরি করেছে Afraz Studio। কোনো অ্যাকাউন্ট বা সাইন-ইন লাগে না।\n\nইংরেজি, বাংলা বা হিন্দিতে যেকোনো প্রশ্ন করুন এবং সহজ ভাষায় পেশাদার উত্তর পান।\n\nযা করতে পারবেন\n• পদার্থবিজ্ঞান, গণিত ও রসায়নের সমস্যা সঠিক চিহ্নসহ ধাপে ধাপে সমাধান (Δ, θ, λ, v₀, m/s²)\n• AI দিয়ে ছবি এবং ১০ সেকেন্ড পর্যন্ত অ্যানিমেটেড ক্লিপ তৈরি\n• নিজের ছবিকে নড়াচড়া করা ক্লিপে রূপান্তর\n• এক বাক্য থেকে ছবিসহ কমিক বই লেখা\n• লাইভ খবর, আবহাওয়া ও মুদ্রার হার\n• ভয়েসে কথা বলুন: মহিলা বা পুরুষ কণ্ঠ\n• দ্রুত টুল: নোট, করণীয় তালিকা, একক রূপান্তর, পাসওয়ার্ড\n• পড়াশোনা, কোডিং, লেখালেখি ও ব্যবসার মোড\n• চ্যাট ফোনে সংরক্ষণ করুন, অথবা হিস্টরি ছাড়া ব্যবহার করুন\n\nLuxy AI ভুল করতে পারে, তাই গুরুত্বপূর্ণ তথ্য যাচাই করুন।"
+    },
+    "hi-IN": {
+      "title": "Luxy AI",
+      "short": "फ़िज़िक्स, तस्वीरें, 10 सेकंड एनिमेशन, कॉमिक। अंग्रेज़ी, बांग्ला, हिन्दी।",
+      "full": "Luxy AI आपका रोज़ का स्मार्ट सहायक है, जिसे Afraz Studio ने बनाया है। कोई अकाउंट या साइन-इन नहीं चाहिए।\n\nअंग्रेज़ी, बांग्ला या हिन्दी में कुछ भी पूछें और आसान भाषा में पेशेवर जवाब पाएँ।\n\nआप क्या कर सकते हैं\n• भौतिकी, गणित और रसायन के सवाल सही चिह्नों के साथ कदम दर कदम हल करें (Δ, θ, λ, v₀, m/s²)\n• AI से तस्वीरें और 10 सेकंड तक की एनिमेटेड क्लिप बनाएँ\n• अपनी फोटो को चलती हुई क्लिप में बदलें\n• एक वाक्य से तस्वीरों वाली कॉमिक बुक लिखवाएँ\n• लाइव खबरें, मौसम और करेंसी रेट\n• आवाज़ में बात करें: महिला या पुरुष आवाज़\n• तेज़ टूल: नोट्स, टू-डू सूची, यूनिट बदलना, पासवर्ड\n• पढ़ाई, कोडिंग, लेखन और बिज़नेस मोड\n• चैट फ़ोन में सेव करें, या बिना हिस्ट्री के इस्तेमाल करें\n\nLuxy AI से गलती हो सकती है, इसलिए ज़रूरी जानकारी जाँच लें."
+    }
+  },
+  "category": "Productivity",
+  "tags": [
+    "AI assistant",
+    "Productivity",
+    "Education"
+  ],
+  "appType": "App",
+  "pricing": "Free",
+  "contactDetails": {
+    "email": "REPLACE_ME@example.com",
+    "website": "REPLACE_ME",
+    "phone": ""
+  },
+  "privacyPolicyUrl": "https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPO/privacy-policy.html (turn on GitHub Pages for the docs folder)",
+  "graphics": {
+    "appIcon": "www/icon-512.png (512x512 PNG)",
+    "featureGraphic": "1024x500 image - create separately",
+    "phoneScreenshots": "2-8 screenshots, 16:9 or 9:16"
+  },
+  "androidPermissions": [
+    "android.permission.INTERNET",
+    "android.permission.CAMERA (only when taking photos)",
+    "android.permission.RECORD_AUDIO (only when you tap the microphone)",
+    "android.permission.ACCESS_COARSE_LOCATION (optional, for automatic weather)"
+  ],
+  "dataSafetyHints": {
+    "accountRequired": false,
+    "dataSold": false,
+    "dataStoredOnDevice": [
+      "chat history (only if the user chooses to save it)",
+      "notes",
+      "to-do list",
+      "settings"
+    ],
+    "dataSentOffDevice": [
+      "questions typed by the user (and any photo or file the user attaches) are sent to third-party AI and web services to produce answers",
+      "city or approximate location when weather is requested",
+      "image, animation and comic prompts are sent to a third-party image service"
+    ],
+    "dataDeletion": "Users can delete chats inside the app, choose 'no history' mode, or clear app data"
+  },
+  "contentRating": {
+    "suggestedAudience": "Everyone 13+ recommended because the app can answer open-ended questions using an AI service",
+    "containsAds": false,
+    "inAppPurchases": false,
+    "userGeneratedContentOrAI": "Yes - declare AI-generated content in the Play Console questionnaire"
+  },
+  "releaseNotes": {
+    "en-US": "No sign-in needed. Save chats on your device or try with no history. New: animated clips up to 10 seconds, symbol shortcuts, smarter answers, themes and study modes.",
+    "bn-BD": "সাইন-ইন লাগে না। চ্যাট ফোনে সংরক্ষণ করুন বা হিস্টরি ছাড়া ব্যবহার করুন। নতুন: ১০ সেকেন্ডের অ্যানিমেটেড ক্লিপ, চিহ্ন শর্টকাট, আরও স্মার্ট উত্তর, থিম ও স্টাডি মোড।",
+    "hi-IN": "साइन-इन की ज़रूरत नहीं। चैट फ़ोन में सेव करें या बिना हिस्ट्री के इस्तेमाल करें। नया: 10 सेकंड तक की एनिमेटेड क्लिप, सिंबल शॉर्टकट, स्मार्ट जवाब, थीम और स्टडी मोड।"
+  }
+}
