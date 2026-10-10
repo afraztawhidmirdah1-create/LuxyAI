@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d0a18">
+<title>Luxy AI</title>
+<meta name="luxy-version" content="3">
+<script>(function(){try{var BV=2,o=localStorage.getItem('luxy_ota'),ov=+localStorage.getItem('luxy_ota_ver')||0;if(o&&ov>BV&&!window.__ota){if(localStorage.getItem('luxy_ota_pend')==='1'&&localStorage.getItem('luxy_ota_ok')!=='1'){localStorage.removeItem('luxy_ota')}else{localStorage.setItem('luxy_ota_pend','1');localStorage.removeItem('luxy_ota_ok');window.__ota=1;document.open();document.write(o);document.close()}}}catch(e){}})()</script>
+
+<script src="config.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#0d0a18;--panel:#151128;--line:#2a2347;--tx:#efeaff;--mut:#9a90c4;--gold:#e8c46a;--gold2:#b98cff;--user:#2a2050}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font-family:Roboto,"Noto Sans","Noto Sans Bengali","Noto Sans Devanagari","Segoe UI",Arial,sans-serif;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+.serif{font-family:Georgia,"Times New Roman",serif}
+
+/* Splash */
+#splash{position:fixed;inset:0;z-index:99;background:radial-gradient(circle at 50% 40%,#241a4a,#0d0a18 70%);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s,transform .8s}
+#splash.out{opacity:0;transform:scale(1.08);pointer-events:none}
+.orb{position:relative;width:150px;height:150px;margin-bottom:34px}
+.orb i{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:var(--gold);animation:spin 2.4s linear infinite}
+.orb i:nth-child(2){inset:14px;border-top-color:var(--gold2);animation-duration:1.8s;animation-direction:reverse}
+.orb i:nth-child(3){inset:28px;border-top-color:#fff;animation-duration:1.2s}
+.orb b{position:absolute;inset:44px;border-radius:50%;background:conic-gradient(var(--gold),var(--gold2),var(--gold));filter:blur(.5px);animation:pulse 1.8s ease-in-out infinite;box-shadow:0 0 60px 10px rgba(185,140,255,.45)}
+.orb em{position:absolute;inset:0;display:grid;place-items:center;font:700 38px Georgia,serif;color:#1a1033;font-style:normal;z-index:2}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{50%{transform:scale(1.12);box-shadow:0 0 90px 22px rgba(232,196,106,.45)}}
+.word{font:700 54px/1 Georgia,serif;letter-spacing:.06em;display:flex;gap:2px}
+.word span{opacity:0;transform:translateY(30px) scale(.6);filter:blur(8px);background:linear-gradient(180deg,#fff,var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;animation:rise .7s cubic-bezier(.2,.9,.3,1.3) forwards}
+@keyframes rise{to{opacity:1;transform:none;filter:none}}
+.by{margin-top:22px;font-size:14px;letter-spacing:.28em;color:var(--mut);opacity:0;animation:fade 1s 1.6s forwards;position:relative;overflow:hidden;padding:4px 10px}
+.by::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.55) 50%,transparent 70%);transform:translateX(-120%);animation:sheen 1.4s 2.4s forwards}
+@keyframes fade{to{opacity:1}}
+@keyframes sheen{to{transform:translateX(120%)}}
+.spark{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--gold);opacity:0;animation:float 4s infinite}
+@keyframes float{0%{opacity:0;transform:translateY(40px)}30%{opacity:.9}100%{opacity:0;transform:translateY(-160px)}}
+
+/* Layout */
+#app{display:flex;height:100%;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+#side{width:290px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;transition:transform .3s;z-index:20}
+#side h2{margin:0;padding:18px 18px 8px;font:700 22px Georgia,serif;color:var(--gold)}
+#side small{padding:0 18px 12px;color:var(--mut);font-size:12px}
+#newchat{margin:6px 14px 12px;padding:12px;border-radius:14px;background:linear-gradient(135deg,var(--gold),#d49af0);color:#1a1033;font-weight:700}
+#list{flex:1;overflow:auto;padding:0 10px}
+.item{display:flex;align-items:center;gap:6px;padding:11px 12px;border-radius:12px;color:var(--mut);cursor:pointer;font-size:14px}
+.item span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item.on,.item:hover{background:var(--user);color:var(--tx)}
+.item button{opacity:.6;font-size:16px;padding:2px 6px}
+.sfoot{padding:12px 14px;border-top:1px solid var(--line);display:flex;gap:8px}
+.sfoot button{flex:1;padding:10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:13px}
+#scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:15}
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
+header .t{font:700 20px Georgia,serif;flex:1}
+header .t small{display:block;font:400 11px system-ui;color:var(--mut)}
+.ib{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:19px;background:var(--panel);border:1px solid var(--line)}
+#menu{display:none}
+#chat{flex:1;overflow:auto;padding:18px 14px;scroll-behavior:smooth}
+.wrap{max-width:780px;margin:0 auto}
+.msg{display:flex;margin-bottom:16px;animation:pop .25s ease}
+@keyframes pop{from{opacity:0;transform:translateY(8px)}}
+.msg.user{justify-content:flex-end}
+.bub{max-width:88%;padding:12px 15px;border-radius:18px;line-height:1.55;font-size:15px;overflow-wrap:anywhere}
+.user .bub{background:var(--user);border-bottom-right-radius:5px}
+.model .bub{background:var(--panel);border:1px solid var(--line);border-bottom-left-radius:5px}
+.bub img{max-width:100%;max-height:240px;border-radius:12px;display:block;margin-bottom:8px}
+.bub p{margin:6px 0}.bub p:first-child{margin-top:0}.bub p:last-child{margin-bottom:0}.bub h4{margin:12px 0 4px;color:var(--gold);font-size:15px}.bub ol{padding-left:22px;margin:6px 0}.bub li{margin:3px 0}
+.bub table{border-collapse:collapse;width:100%;font-size:13px;margin:8px 0;display:block;overflow-x:auto}.bub th,.bub td{border:1px solid var(--line);padding:6px 9px;text-align:left}.bub th{background:var(--user)}
+.bub pre{background:#0a0714;border:1px solid var(--line);border-radius:12px;padding:12px;overflow:auto;font-size:13px;margin:8px 0;position:relative}
+.bub code{font-family:ui-monospace,Menlo,Consolas,monospace}
+.bub p code,.bub li code{background:#0a0714;padding:2px 6px;border-radius:6px;font-size:13px}
+.bub ul{padding-left:20px;margin:6px 0}
+.chip-file{display:inline-block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:12px;margin-bottom:6px}
+.dots span{display:inline-block;width:8px;height:8px;margin:0 2px;border-radius:50%;background:var(--gold);animation:bn 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes bn{50%{transform:translateY(-6px);opacity:.4}}
+#hero{text-align:center;padding:7vh 10px 10px}
+#brief{text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;margin:0 0 14px;font-size:14px;line-height:1.5}#brief b{color:var(--gold)}#brief .w{margin:4px 0 8px;color:var(--mut)}#brief a{color:var(--tx);text-decoration:none;display:block;padding:7px 0;border-top:1px solid var(--line)}
+#hero h1{font:700 40px Georgia,serif;margin:0 0 6px;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#hero p{color:var(--mut);margin:0 0 24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid button{text-align:left;padding:14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);font-size:14px;line-height:1.35}
+.grid button b{display:block;font-size:20px;margin-bottom:4px}
+.grid button:active{transform:scale(.97);border-color:var(--gold)}
+
+/* Composer */
+#comp{padding:10px 12px 12px}
+#prev{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
+.pv{position:relative;flex:none}
+.pv img{width:64px;height:64px;object-fit:cover;border-radius:12px;border:1px solid var(--line)}
+.pv .f{width:64px;height:64px;border-radius:12px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:11px;padding:4px;text-align:center;overflow:hidden}
+.pv button{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#ff6b8a;color:#fff;font-size:12px}
+.bar{display:flex;align-items:flex-end;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:6px;max-width:780px;margin:0 auto}
+.bar:focus-within{border-color:var(--gold)}
+textarea{flex:1;resize:none;background:none;border:0;outline:0;color:var(--tx);font:15px/1.4 Roboto,"Noto Sans","Noto Sans Bengali","Noto Sans Devanagari",Arial,sans-serif;padding:10px 4px;max-height:140px}
+.bar .ib{border:0;background:var(--bg);border-radius:50%;flex:none}
+#send{background:linear-gradient(135deg,var(--gold),#d49af0);color:#1a1033;font-weight:700}
+#attmenu{display:none;position:absolute;bottom:78px;left:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:6px;z-index:10;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+#attmenu button{display:block;width:100%;text-align:left;padding:12px 18px;border-radius:10px;white-space:nowrap}
+#attmenu button:hover{background:var(--user)}
+.hint{text-align:center;font-size:11px;color:var(--mut);margin-top:6px}
+
+/* Settings */
+#set{display:none;position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.65);align-items:center;justify-content:center;padding:18px}
+#set .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;width:100%;max-width:440px}
+#set h3{margin:0 0 4px;font:700 22px Georgia,serif;color:var(--gold)}
+#set label{display:block;font-size:13px;color:var(--mut);margin:14px 0 6px}
+#set input,#set textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--tx);font:14px system-ui}
+#set textarea{height:80px}
+#set .row{display:flex;gap:10px;margin-top:18px}
+#set .row button{flex:1;padding:12px;border-radius:12px;background:var(--bg);border:1px solid var(--line)}
+#set .row .pri{background:linear-gradient(135deg,var(--gold),#d49af0);color:#1a1033;font-weight:700;border:0}
+#set a{color:var(--gold2)}
+
+#set .card{max-height:90vh;overflow:auto}
+.act{display:flex;gap:6px;margin-top:8px}.act button{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:5px 11px;font-size:14px}
+.gen{margin-top:8px}.gen>img{width:100%;border-radius:14px;display:block}
+.vbox{position:relative;aspect-ratio:16/9;overflow:hidden;border-radius:14px;background:#000}.vbox img{width:100%;height:100%;object-fit:cover;display:block}
+.vbox .cap{position:absolute;left:0;right:0;bottom:0;padding:10px 12px;background:linear-gradient(transparent,rgba(0,0,0,.75));font-size:14px;text-align:center}
+@keyframes kb{from{transform:scale(1);opacity:.4}10%{opacity:1}to{transform:scale(1.12);opacity:1}}
+#mic.rec{background:#ff6b8a;color:#fff}
+#acctbox{margin-top:6px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--bg)}
+#acctbox .who{display:flex;align-items:center;gap:10px;margin-bottom:8px}#acctbox .who img,#acctbox .who span{width:40px;height:40px;border-radius:50%;object-fit:cover;font-size:22px;display:grid;place-items:center}
+#acctbox .arow{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}#acctbox .arow button{flex:1;min-width:120px;padding:10px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font-size:13px}
+#set select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--tx);font:14px sans-serif}
+.ota{position:fixed;left:12px;right:12px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:60;background:linear-gradient(135deg,var(--gold),#d49af0);color:#1a1033;font-weight:700;padding:14px;border-radius:14px;text-align:center}
+
+.zt{font:700 19px Georgia,serif;color:var(--gold);margin-bottom:8px}.zs{font-size:12px;color:var(--mut);margin-top:6px}
+.zp{background:#fffdf5;border-radius:12px;padding:8px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.zp.zcv{display:block;padding:0;background:none}.zp:not(.zcv) .zn:first-child:nth-last-child(odd){grid-column:1/-1}
+.zn{position:relative;overflow:hidden;border:2px solid #111;border-radius:4px;background:#000}
+.zn img,.zcv img{width:100%;max-height:none;margin:0;border-radius:0;display:block;min-height:110px}.zcv img{border-radius:12px}
+img.zld{background:linear-gradient(110deg,#1c1638 8%,#2a2250 18%,#1c1638 33%);background-size:200% 100%;animation:zsh 1.2s linear infinite}@keyframes zsh{to{background-position:-200% 0}}
+.zcap{position:absolute;top:0;left:0;right:0;background:#ffe27a;color:#111;font-size:11px;padding:3px 6px}
+.zsp{position:absolute;bottom:6px;left:6px;right:6px;display:flex;flex-direction:column;gap:3px}
+.zsp span{background:#fff;color:#111;border-radius:12px;padding:3px 9px;font-size:11px;max-width:92%;align-self:flex-start}.zsp span:nth-child(2){align-self:flex-end}
+.zv{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden}
+.bub .zv img{position:absolute;inset:0;width:100%;height:100%;max-height:none;margin:0;border-radius:0;object-fit:cover;opacity:0;transition:opacity 1s}
+.bub .zv img.on{opacity:1;animation:zkb linear forwards}@keyframes zkb{to{transform:scale(1.14)}}
+.zsub{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.85));padding:22px 10px 8px;font-size:12px;color:#fff;max-height:60%;overflow:hidden}
+.zbar{display:flex;align-items:center;gap:8px;margin-top:8px}.zbar button{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 14px;font-size:15px;color:var(--tx)}.zbar span{font-size:12px;color:var(--mut)}
+
+#gate{position:fixed;inset:0;z-index:98;background:radial-gradient(circle at 50% 30%,#241a4a,#0d0a18 70%);display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:auto}
+#gate .gl{font:700 44px Georgia,serif;background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+#gate h2{margin:6px 0 4px;font:600 20px Georgia,serif;text-align:center}#gate p{color:var(--mut);text-align:center;max-width:340px;margin:0 0 22px;font-size:14px}
+#gate .gb{width:100%;max-width:340px;display:flex;flex-direction:column;gap:12px}
+#gate button.pv2{padding:14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);font-size:15px;font-weight:600}
+#gate button.pv2:active{transform:scale(.97);border-color:var(--gold)}
+#gate input{width:100%;padding:14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);color:var(--tx);font-size:15px}
+#gate .gm{color:#ff9bb0;font-size:13px;min-height:18px;text-align:center;max-width:340px;margin-top:10px}
+#gate .gz{display:flex;gap:8px;margin-top:22px}#gate .gz button{padding:6px 12px;border-radius:10px;background:var(--panel);border:1px solid var(--line);font-size:13px}
+#boost{display:none;margin:8px 12px 0;padding:10px 12px;border:1px solid var(--gold);border-radius:14px;background:var(--panel);font-size:13px;align-items:center;gap:8px;flex-wrap:wrap}#boost button{padding:6px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--line);color:var(--tx);font-size:13px}
+@media(max-width:820px){
+ #side{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);padding-top:env(safe-area-inset-top)}
+ #side.open{transform:none}#side.open~#scrim{display:block}
+ #menu{display:grid}
+}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-delay:0s!important}}
+/* ===== themes + special design ===== */
+:root{--user2:#3a2a78}
+html[data-theme=aurora]{--bg:#06141a;--panel:#0d2229;--line:#1b4650;--tx:#e8fbff;--mut:#7fb6c4;--gold:#5ef2c9;--gold2:#6aa8ff;--user:#134a55;--user2:#1f6a78}
+html[data-theme=sunrise]{--bg:#fff7ee;--panel:#ffffff;--line:#f1d9c4;--tx:#2a1a12;--mut:#8a6a56;--gold:#e0662a;--gold2:#c43c7a;--user:#ffe3cf;--user2:#ffd0b0}
+#main{position:relative}
+#main::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;background:radial-gradient(60% 40% at 15% 10%,color-mix(in srgb,var(--gold2) 35%,transparent),transparent 70%),radial-gradient(50% 40% at 90% 30%,color-mix(in srgb,var(--gold) 28%,transparent),transparent 70%),radial-gradient(60% 40% at 50% 100%,color-mix(in srgb,var(--gold2) 25%,transparent),transparent 70%);background-size:140% 140%;animation:aur 16s ease-in-out infinite alternate}
+@keyframes aur{from{background-position:0 0}to{background-position:100% 60%}}
+header,#chat,#comp{position:relative;z-index:1}
+header{backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 72%,transparent)}
+header .t{background:linear-gradient(90deg,var(--gold),var(--gold2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header .t small{-webkit-text-fill-color:var(--mut)}
+.user .bub{background:linear-gradient(135deg,var(--user),var(--user2))}
+.model .bub{box-shadow:0 8px 28px rgba(0,0,0,.16)}
+.bar{box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.orb.s{transform:scale(.6);margin:-30px auto -30px}
+#gate .orb.s{margin:-20px auto -14px}
+#gate .big{display:flex;flex-direction:column;gap:4px;text-align:left;padding:16px 18px}
+#gate .big span{font-size:16px;font-weight:700}#gate .big small{color:var(--mut);font-weight:400;font-size:12px;line-height:1.4}
+#gate .gz button{color:var(--tx)}
+#tagl{height:24px;margin:2px 0 6px;color:var(--gold);font-weight:600;letter-spacing:.02em;transition:opacity .35s}
+.strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 14px}
+.strip button{padding:14px 6px;border-radius:18px;color:#1a1033;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 8px 22px rgba(0,0,0,.25);transition:transform .15s}
+.strip button:active{transform:scale(.95)}
+.strip button b{font-size:24px}
+.strip button:nth-child(1){background:linear-gradient(135deg,#ffd86b,#ff9d6b)}
+.strip button:nth-child(2){background:linear-gradient(135deg,#9ad0ff,#b98cff)}
+.strip button:nth-child(3){background:linear-gradient(135deg,#8af0c5,#6ac4ff)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips button{padding:7px 12px;border-radius:999px;background:var(--bg);border:1px solid var(--gold);color:var(--tx);font-size:13px;line-height:1.3;text-align:left}
+.chips button:active{background:var(--user)}
+#msheet{display:none;position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.65);align-items:center;justify-content:center;padding:18px}#msheet .card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;width:100%;max-width:400px;max-height:88vh;overflow:auto}#msheet h3{margin:0 0 12px}#msheet .mrow{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;padding:12px 14px;margin-bottom:8px;border-radius:14px;background:var(--bg);border:1px solid var(--line);color:var(--tx);text-align:left}#msheet .mrow small{color:var(--mut);font-size:12px}#msheet .mrow.on{border-color:var(--gold);background:var(--panel)}#mdl{flex:none;padding:6px 10px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:12px;font-weight:600;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx)}
+#modes{display:flex;gap:6px;overflow-x:auto;max-width:780px;margin:0 auto;padding:0 2px 8px;scrollbar-width:none}
+#modes::-webkit-scrollbar{display:none}
+#modes button{flex:none;padding:6px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px;white-space:nowrap}
+#modes button.on{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1a1033;border-color:transparent;font-weight:700}
+.vbox canvas{width:100%;height:100%;display:block}
+.vbox .vtime{position:absolute;top:8px;right:10px;font-size:12px;background:rgba(0,0,0,.55);color:#fff;border-radius:8px;padding:2px 8px}
+#set select{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--tx);font:14px Roboto,Arial,sans-serif}
+#set .arow{display:flex;gap:8px;margin:8px 0}#set .arow button{flex:1;padding:10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:13px;color:var(--tx)}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="orb"><i></i><i></i><i></i><b></b><em>L</em></div>
+  <div class="word" id="word"></div>
+  <div class="by">MADE BY AFRAZ STUDIO</div>
+</div>
+
+<div id="app">
+  <aside id="side">
+    <h2>Luxy AI</h2><small>Made by Afraz Studio</small>
+    <button id="newchat">+ New chat</button>
+    <div id="list"></div>
+    <div class="sfoot"><button id="setbtn">⚙ Settings</button><button id="clearall">Clear all</button></div>
+  </aside>
+  <div id="scrim"></div>
+  <main id="main">
+    <header>
+      <button class="ib" id="menu" aria-label="Chats">☰</button>
+      <div class="t">Luxy AI<small>Made by Afraz Studio</small></div>
+      <button class="ib" id="theme" aria-label="Theme">🌗</button>
+      <button class="ib" id="lang" aria-label="Language" style="font-size:13px;font-weight:700"></button>
+      <button class="ib" id="newtop" aria-label="New chat">✎</button>
+    </header>
+    <div id="chat"><div class="wrap" id="msgs"></div></div>
+    <div id="comp">
+      <div id="attmenu">
+        <button data-a="cam">📷 Take a photo</button>
+        <button data-a="gal">🖼 Choose pictures</button>
+        <button data-a="file">📄 Upload a file</button>
+        <button data-a="img">🎨 Create an image</button>
+        <button data-a="vid">🎬 Create a video</button>
+        <button data-a="cmc">📖 Create a comic book</button>
+      </div>
+      <div id="modes"></div>
+      <div id="prev"></div>
+      <div class="bar">
+        <button class="ib" id="plus" aria-label="Attach">＋</button>
+        <textarea id="inp" rows="1" placeholder="Message Luxy AI"></textarea>
+        <button class="ib" id="mic" aria-label="Speak">🎤</button>
+        <button class="ib" id="send" aria-label="Send">➤</button>
+      </div>
+      <div class="hint">Luxy AI can make mistakes. Check important info.</div>
+    </div>
+  </main>
+</div>
+
+<input type="file" id="fCam" accept="image/*" capture="environment" hidden>
+<input type="file" id="fGal" accept="image/*" multiple hidden>
+<input type="file" id="fImp" accept=".json,application/json" hidden>
+<input type="file" id="fFile" accept=".txt,.md,.csv,.json,.js,.py,.html,.css,.xml,.log" multiple hidden>
+
+<div id="set">
+  <div class="card">
+    <h3>Settings</h3>
+    <div style="color:var(--mut);font-size:13px">Luxy AI is fully independent: no account and no key needed. It thinks with several free AI engines and searches the web by itself.</div>
+    <label>Your city (for weather)</label><input id="scity" placeholder="e.g. Dhaka">
+    <label>Daily update URL (optional)</label><input id="surl" placeholder="https://raw.githubusercontent.com/you/repo/main/config.json">
+    <label>Smarter engine (optional, advanced): any OpenAI-compatible AI server, e.g. Groq, OpenRouter or your own</label><input id="sceu" placeholder="https://api.groq.com/openai/v1"><input id="sck" type="password" placeholder="Key" style="margin-top:6px"><input id="scm" placeholder="Model, e.g. llama-3.3-70b-versatile" style="margin-top:6px">
+    <div class="mini" style="margin-top:8px"><button id="etest" type="button" style="padding:10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--tx)">Test my AI engine</button></div><div id="etx" style="font-size:13px;margin-top:6px;color:var(--mut)"></div>
+    <label>Personality (optional)</label><textarea id="spers" placeholder="e.g. Reply in Hinglish, keep answers short"></textarea>
+    <label>Reply language</label><select id="srl"><option value="">Auto (same as I write)</option><option value="en">English</option><option value="bn">বাংলা</option><option value="hi">हिन्दी</option></select>
+    <label>Voice</label><select id="svoice"><option value="female">Female voice</option><option value="male">Male voice</option></select>
+    <label><input id="sauto" type="checkbox" style="width:auto"> Read replies aloud automatically</label>
+    <label>Chat history and backup</label><div id="acctbox"></div>
+    <div class="row"><button id="sclose">Cancel</button><button class="pri" id="ssave">Save</button></div>
+  </div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+const SYS="You are Luxy AI, a smart, friendly and powerful personal assistant made by Afraz Studio. Help with daily life: answering questions, writing and editing, translating, summarising, planning, study help, coding, math, and analysing images and files. Be clear, accurate and concise. Reply in the user's language. Use short paragraphs, bullet lists and code blocks when useful. If asked who made you, say Afraz Studio.";
+
+/* splash */
+(function(){
+  const w=$('#word');
+  [...'Luxy AI'].forEach((c,i)=>{const s=document.createElement('span');s.textContent=c===' '?'\u00a0':c;s.style.animationDelay=(.5+i*.11)+'s';w.appendChild(s)});
+  for(let i=0;i<16;i++){const p=document.createElement('div');p.className='spark';p.style.left=Math.random()*100+'%';p.style.top=(45+Math.random()*50)+'%';p.style.animationDelay=Math.random()*4+'s';$('#splash').appendChild(p)}
+  setTimeout(()=>{$('#splash').classList.add('out');setTimeout(()=>$('#splash').remove(),900)},4000);
+})();
+
+/* state */
+const ls={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}};
+let cfg=ls.get('luxy_cfg',{key:'',model:'gemini-2.5-flash',pers:''});
+let HIST=ls.get('luxy_mode','')!=='try';
+let chats=HIST?ls.get('luxy_chats',[]):[];
+let cur=null,pend=[],busy=false;
+
+const save=()=>{if(!HIST)return;const rp=(k,v)=>(k==='f'&&Array.isArray(v)&&v.some(u=>String(u).slice(0,5)==='data:'))?[]:v;try{localStorage.setItem('luxy_chats',JSON.stringify(chats,rp))}catch(e){chats.forEach(c=>c.m.forEach(m=>{if(m.imgs)m.imgs=[]}));try{localStorage.setItem('luxy_chats',JSON.stringify(chats,rp))}catch(e2){}}};
+const esc=s=>s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+
+/* Languages + free web brain */
+const I={
+en:{tag:'EN',ph:'Message Luxy AI',nc:'+ New chat',st:'⚙ Settings',clr:'Clear all',delq:'Delete all chats?',hint:'Luxy AI can make mistakes. Check important info.',src:'Sources',srch:'Searching the web…',hero:'Ask anything in English, বাংলা or हिन्दी. Live web, news and weather, updated every day.',wa:'Here is what I found on the web:',off:'You seem to be offline, so I used my built-in engine.',hi:'Hello{n}! I am Luxy AI. How can I help you today?',who:'I am **Luxy AI**, made by **Afraz Studio**. I can search the web and answer in English, Bengali and Hindi.',
+ prompts:[['🔎','What is photosynthesis?','What is photosynthesis?'],['🌍','Tell me about the Taj Mahal','Tell me about the Taj Mahal'],['✉️','Write a leave email','Write a short email to my boss asking for a day off'],['🧮','Quick math','25% of 480'],['⚛️','Physics problem','A car accelerates from rest to 20 m/s in 5 s. Find the acceleration and the distance covered.'],['💡','Motivation','Give me a motivational quote']]},
+bn:{tag:'বাং',ph:'Luxy AI-কে লিখুন',nc:'+ নতুন চ্যাট',st:'⚙ সেটিংস',clr:'সব মুছুন',delq:'সব চ্যাট মুছবেন?',hint:'Luxy AI ভুল করতে পারে। গুরুত্বপূর্ণ তথ্য যাচাই করুন।',src:'সূত্র',srch:'ওয়েবে খুঁজছি…',hero:'ইংরেজি, বাংলা বা হিন্দিতে যা খুশি জিজ্ঞাসা করুন। লাইভ ওয়েব, খবর ও আবহাওয়া, প্রতিদিন আপডেট।',wa:'ওয়েবে যা পেলাম:',off:'আপনি অফলাইনে আছেন, তাই আমার বিল্ট-ইন ইঞ্জিন ব্যবহার করেছি।',hi:'নমস্কার{n}! আমি Luxy AI। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?',who:'আমি **Luxy AI**, **Afraz Studio** আমাকে বানিয়েছে। আমি ওয়েব খুঁজে ইংরেজি, বাংলা ও হিন্দিতে উত্তর দিতে পারি।',
+ prompts:[['🔎','সালোকসংশ্লেষণ কী?','সালোকসংশ্লেষণ কী?'],['🌍','সুন্দরবন সম্পর্কে বলো','সুন্দরবন সম্পর্কে বলো'],['✉️','ছুটির ইমেইল লেখো','বসের কাছে এক দিনের ছুটি চেয়ে একটি ছোট ইমেইল লেখো'],['🧮','দ্রুত হিসাব','25% of 480'],['⚛️','পদার্থবিজ্ঞান','একটি গাড়ি স্থির অবস্থা থেকে ৫ সেকেন্ডে ২০ m/s বেগ অর্জন করে। ত্বরণ ও অতিক্রান্ত দূরত্ব নির্ণয় করো।'],['💡','অনুপ্রেরণা','একটি অনুপ্রেরণামূলক উক্তি বলো']]},
+hi:{tag:'हिं',ph:'Luxy AI को लिखें',nc:'+ नई चैट',st:'⚙ सेटिंग्स',clr:'सब हटाएँ',delq:'सभी चैट हटाएँ?',hint:'Luxy AI गलती कर सकता है। ज़रूरी जानकारी जाँच लें।',src:'स्रोत',srch:'वेब पर खोज रहा हूँ…',hero:'अंग्रेज़ी, बांग्ला या हिन्दी में कुछ भी पूछें। लाइव वेब, खबरें और मौसम, हर दिन अपडेट।',wa:'वेब पर मुझे यह मिला:',off:'आप ऑफ़लाइन लगते हैं, इसलिए मैंने अपना बिल्ट-इन इंजन इस्तेमाल किया।',hi:'नमस्ते{n}! मैं Luxy AI हूँ। आज मैं आपकी कैसे मदद कर सकता हूँ?',who:'मैं **Luxy AI** हूँ, जिसे **Afraz Studio** ने बनाया है। मैं वेब खोजकर अंग्रेज़ी, बांग्ला और हिन्दी में जवाब दे सकता हूँ।',
+ prompts:[['🔎','प्रकाश संश्लेषण क्या है?','प्रकाश संश्लेषण क्या है?'],['🌍','ताजमहल के बारे में बताओ','ताजमहल के बारे में बताओ'],['✉️','छुट्टी का ईमेल','बॉस को एक दिन की छुट्टी के लिए छोटा ईमेल लिखो'],['🧮','जल्दी हिसाब','25% of 480'],['⚛️','भौतिकी','एक कार विराम से 5 s में 20 m/s की चाल प्राप्त करती है। त्वरण और तय की गई दूरी ज्ञात करो।'],['💡','प्रेरणा','एक प्रेरक विचार सुनाओ']]}};
+let lang=ls.get('luxy_lang','en');
+const detect=t=>/[\u0980-\u09FF]/.test(t)?'bn':/[\u0900-\u097F]/.test(t)?'hi':/[a-zA-Z]{3}/.test(t)?'en':null;
+function applyLang(){const T=I[lang];$('#lang').textContent=T.tag;$('#inp').placeholder=T.ph;$('#newchat').textContent=T.nc;$('#setbtn').textContent=T.st;$('#clearall').textContent=T.clr;document.querySelector('.hint').textContent=T.hint;document.documentElement.lang=lang;renderList();renderChat();modesUI();modeUI()}
+$('#lang').onclick=()=>{lang=lang==='en'?'bn':lang==='bn'?'hi':'en';ls.set('luxy_lang',lang);applyLang()};
+
+async function tfetch(u,o,ms){const c=new AbortController(),id=setTimeout(()=>c.abort(),ms||15000);try{const r=await fetch(u,Object.assign({},o,{signal:c.signal}));if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(id)}}
+const clean=q=>q.replace(/^[\u{1F50E}\u{1F30D}\u{1F4DD}\u{1F4BB}\u{1F4A1}\u{1F9EE}]\uFE0F?\s*/u,'').replace(/[?!.\u0964]+$/g,'').replace(/^(what|who|where|when|why|how)\s+(is|are|was|were|do|does|did)\s+(a|an|the)?\s*/i,'').replace(/^(tell me about|explain|define|about)\s+/i,'').replace(/\s*(সম্পর্কে বলো|সম্পর্কে বলুন|কী|কি|কে|के बारे में बताओ|के बारे में बताइए|क्या है|क्या)\s*$/,'').trim();
+/* Live web brain: news, weather, rates, Wikipedia, daily briefing */
+const CUR={usd:'USD',dollar:'USD',dollars:'USD','ডলার':'USD','डॉलर':'USD',inr:'INR',rupee:'INR',rupees:'INR','রুপি':'INR','रुपये':'INR',bdt:'BDT',taka:'BDT','টাকা':'BDT',eur:'EUR',euro:'EUR',gbp:'GBP',pound:'GBP',aed:'AED',sar:'SAR',pkr:'PKR',jpy:'JPY',cny:'CNY',cad:'CAD',aud:'AUD'};
+const WX=/\b(weather|forecast)\b|\b(temperature|rain|raining)\b.*\b(today|tomorrow|now|tonight)\b|will it rain|আবহাওয়া|মৌসম|मौसम|তাপমাত্রা (আজ|এখন)|बारिश|বৃষ্টি/i;
+const WXW=/weather|temperature|forecast|rain|today|tomorrow|now|what|whats|what's|is|the|in|of|like|how|will|it|আবহাওয়া|তাপমাত্রা|বৃষ্টি|আজকের|আজ|এখন|কেমন|কত|কী|কি|মৌসম|मौसम|तापमान|बारिश|आज|का|की|में|कैसा|क्या|है|अभी|\?/gi;
+const NWs='news|latest|breaking|headlines|খবর|সংবাদ|সর্বশেষ|ताज़ा|ताजा|खबर|समाचार';
+const NWt=new RegExp(NWs,'i'),NWg=new RegExp(NWs,'gi');
+const wi=c=>c==0?'☀️':c<3?'⛅':c==3?'☁️':c<50?'🌫':c<70?'🌧':c<80?'❄️':c<90?'🌦':'⛈';
+const wd=c=>c==0?'clear':c<3?'partly cloudy':c==3?'overcast':c<50?'fog':c<70?'rain':c<80?'snow':c<90?'showers':'thunderstorm';
+async function geo(city){const j=await tfetch('https://geocoding-api.open-meteo.com/v1/search?count=1&name='+encodeURIComponent(city));const r=j.results&&j.results[0];return r?{la:r.latitude,lo:r.longitude,n:r.name+(r.country?', '+r.country:'')}:null}
+async function locate(ask){
+  if(cfg.city){try{const g=await geo(cfg.city);if(g)return g}catch(e){}}
+  if(!ask||!navigator.geolocation)return null;
+  return new Promise(r=>navigator.geolocation.getCurrentPosition(p=>r({la:p.coords.latitude,lo:p.coords.longitude,n:''}),()=>r(null),{timeout:8000,maximumAge:36e5}));
+}
+async function weather(p){
+  const j=await tfetch('https://api.open-meteo.com/v1/forecast?latitude='+p.la+'&longitude='+p.lo+'&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=2');
+  const c=j.current,d=j.daily,t=Math.round(c.temperature_2m),lo=Math.round(d.temperature_2m_min[0]),hi=Math.round(d.temperature_2m_max[0]),r=d.precipitation_probability_max[0];
+  return{s:wi(c.weather_code)+' '+t+'°C · '+lo+'–'+hi+'°C · 💧'+r+'%'+(p.n?' · '+p.n:''),l:(p.n||'User location')+': now '+t+'°C (feels '+Math.round(c.apparent_temperature)+'°C), '+wd(c.weather_code)+', humidity '+c.relative_humidity_2m+'%, wind '+Math.round(c.wind_speed_10m)+' km/h; today '+lo+'–'+hi+'°C, rain chance '+r+'%; tomorrow '+Math.round(d.temperature_2m_min[1])+'–'+Math.round(d.temperature_2m_max[1])+'°C, rain chance '+d.precipitation_probability_max[1]+'%'};
+}
+async function news(q,l){
+  const h={en:['en-US','US','US:en'],bn:['bn','BD','BD:bn'],hi:['hi','IN','IN:hi']}[l]||['en-US','US','US:en'];
+  const rss=q?'https://news.google.com/rss/search?q='+encodeURIComponent(q+' when:7d')+'&hl='+h[0]+'&gl='+h[1]+'&ceid='+h[2]:'https://news.google.com/rss?hl='+h[0]+'&gl='+h[1]+'&ceid='+h[2];
+  const j=await tfetch('https://api.rss2json.com/v1/api.json?rss_url='+encodeURIComponent(rss));
+  return(j.items||[]).slice(0,5).map(i=>({t:i.title,u:i.link,d:(i.pubDate||'').slice(0,10)}));
+}
+async function loadBrief(){
+  const d=new Date().toISOString().slice(0,10),c=ls.get('luxy_brief',null);
+  if(c&&c.d===d&&c.l===lang)return c;
+  const b={d,l:lang,w:'',n:[]};
+  await Promise.allSettled([(async()=>{const p=await locate(false);if(p)b.w=(await weather(p)).s})(),(async()=>{b.n=await news('',lang)})()]);
+  if(b.w||b.n.length)ls.set('luxy_brief',b);return b;
+}
+const BT={en:'Today',bn:'আজ',hi:'आज'};
+async function fillBrief(){
+  const el=$('#brief');if(!el)return;
+  const dt=new Date().toLocaleDateString(lang==='en'?'en-GB':lang==='bn'?'bn-BD':'hi-IN',{weekday:'long',day:'numeric',month:'long'});
+  el.innerHTML='<b>'+BT[lang]+' · '+dt+'</b><div class="w">…</div>';
+  const b=await loadBrief(),rem=ls.get('luxy_remote',{});
+  const e2=$('#brief');if(!e2)return;
+  e2.innerHTML='<b>'+BT[lang]+' · '+dt+'</b>'+(b.w?'<div class="w">'+esc(b.w)+'</div>':'')+(rem.notice?'<div class="w">📣 '+esc(rem.notice)+'</div>':'')+b.n.slice(0,4).map(n=>'<a href="'+esc(n.u)+'" target="_blank" rel="noopener">'+esc(n.t)+'</a>').join('');
+}
+async function dailyConfig(){
+  const d=new Date().toISOString().slice(0,10);if(!cfg.url||ls.get('luxy_cfgday','')===d)return;
+  try{const j=await tfetch(cfg.url+(cfg.url.includes('?')?'&':'?')+'t='+d);ls.set('luxy_remote',j);ls.set('luxy_cfgday',d)}catch(e){}
+}
+async function wiki(q,l,n,p){
+  const u='https://'+l+'.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit='+(n||5)+'&prop=extracts&exintro=1&explaintext=1&exlimit=20&exchars=1500&gsrsearch='+encodeURIComponent(q);
+  const j=await tfetch(u,null,6000);
+  return Object.values((j.query&&j.query.pages)||{}).sort((a,b)=>a.index-b.index).filter(x=>x.extract&&x.extract.length>40).map(x=>({t:x.title,x:x.extract.trim(),p:p||0}));
+}
+async function llm(messages,onChunk,model,ce,ext){
+  if(FREE[model]){const F=FREE[model];ce={url:F.url,key:F.key};model=await pickModel(F,model)}
+  const c=new AbortController();let id=setTimeout(()=>c.abort(),10000);
+  if(ext){if(ext.signal.aborted)c.abort();else ext.signal.addEventListener('abort',()=>c.abort())}
+  try{
+    const hd={'Content-Type':'application/json'};if(ce&&ce.key)hd.Authorization='Bearer '+ce.key;
+    const url=ce&&ce.url?(/\/chat\/completions$/.test(ce.url)?ce.url:ce.url.replace(/\/+$/,'')+'/chat/completions'):'https://text.pollinations.ai/openai';
+    const r=await fetch(url,{method:'POST',headers:hd,body:JSON.stringify({model:model||'openai',messages,stream:true}),signal:c.signal});
+    if(!r.ok){let em='';try{em=(await r.text()).slice(0,200)}catch(e){}throw new Error('HTTP '+r.status+' '+em)}
+    const rd=r.body&&r.body.getReader?r.body.getReader():null,dec=new TextDecoder();let raw='',buf='',out='';
+    if(!rd){raw=await r.text()}else for(;;){
+      const x=await rd.read();if(x.done)break;clearTimeout(id);id=setTimeout(()=>c.abort(),20000);
+      const ch=dec.decode(x.value,{stream:true});raw+=ch;buf+=ch;const lines=buf.split('\n');buf=lines.pop();
+      for(const ln of lines){const s=ln.trim();if(s.slice(0,5)!=='data:')continue;const d=s.slice(5).trim();if(d==='[DONE]')continue;
+        try{const j=JSON.parse(d),o=j.choices&&j.choices[0],t=o&&((o.delta&&o.delta.content)||(o.message&&o.message.content))||'';if(t){out+=t;if(onChunk)onChunk(out)}}catch(e){}}
+    }
+    if(!out.trim()){try{const j=JSON.parse(raw);out=j.choices[0].message.content||''}catch(e){}}
+    if(!out.trim())throw new Error('empty');
+    return out;
+  }finally{clearTimeout(id)}
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const noCite=t=>t.replace(/\s?\[\d+\]/g,'').trim();
+const TASK=/^(write|draft|compose|translate|fix|debug|solve|calculate|help|plan|make|create|give|suggest|summari[sz]e|convert|rewrite|correct|improve|teach|show|generate|design|build|code|list|compare|should|can you|could you|please|how (do|to|can|should)|why|my |i |i'm|im |লিখ|অনুবাদ|সমাধান|বানাও|সাহায্য|আমার|कैसे|लिखो|हल|अनुवाद|बनाओ|मदद|मेरा|मेरी)/i;
+const BUSY={en:'I could not reach my AI engine just now (it may be busy, or your internet is slow). Please send your message again in a few seconds.',bn:'এই মুহূর্তে আমার AI ইঞ্জিনের সাথে যোগাযোগ করা যায়নি (ব্যস্ত থাকতে পারে বা ইন্টারনেট ধীর)। কয়েক সেকেন্ড পরে আবার পাঠান।',hi:'अभी मेरा AI इंजन नहीं मिल सका (व्यस्त हो सकता है या इंटरनेट धीमा है)। कुछ सेकंड बाद संदेश फिर भेजें।'};
+/* ---- Strong engines: Gemini (with Google Search), any OpenAI-compatible server, free fallback ---- */
+function friendly(e){const m=String((e&&e.message)||e||'');
+  if(/API key not valid|API_KEY_INVALID|\b(401|403)\b|PERMISSION_DENIED|Incorrect API key/i.test(m))return 'The key was not accepted. Check that you pasted all of it.';
+  if(/\b429\b|quota|RESOURCE_EXHAUSTED|rate limit/i.test(m))return 'The free limit of this key is used up for now. Try again later.';
+  if(/Failed to fetch|NetworkError|aborted/i.test(m))return 'Could not connect. Check your internet.';
+  return m.slice(0,140)}
+/* ---- What Luxy AI knows about itself, symbols, and how to read the user ---- */
+const KNOW=`LUXY KNOWLEDGE (you are Luxy AI, made by Afraz Studio, and you run inside this app):
+APP SKILLS you can explain and help with:
+- Pictures: type /image idea or start the message with 🎨. Animated clips of 3 to 10 seconds: /video idea, 10 seconds, or start with 🎬 (the app animates AI pictures with camera moves, fades, sparkles and captions, and can save the clip). Attach a photo and say "animate" to make your own photo move. Comic books: /comic story, 8 pages, or start with 📖. Long narrated videos: /video topic, 5 minutes.
+- Symbol shortcuts at the start of a message: 🎨 picture, 🎬 animated clip, 📖 comic, 🧮 step-by-step solution, 🔎 deep research, 🌍 translate, 📝 write, 💻 code, 💡 explain simply. Typing "symbols" shows the full symbol guide.
+- Voice: 🎤 to speak, 🔊 to listen, female or male voice in Settings. Files and photos: the + button. Notes: "note: ...", tasks: "todo: ...", "physics formulas" shows a formula sheet.
+- Live information: weather, news, currency rates and Wikipedia. Chat history is either saved on this device or in no-history mode.
+HOW TO UNDERSTAND WHAT THE USER NEEDS:
+1) Read the whole conversation, not only the last line, and resolve words like it, this, that, এটা, यह.
+2) Work out the real goal behind the words (learn, decide, fix, create, compare, vent) and the person's level from how they write.
+3) Cope with typos, slang, mixed languages and romanized Bengali or Hindi.
+4) If several meanings are possible, answer the most likely one first and mention the other briefly.
+5) Never say you cannot understand. Try your best, and ask at most one short question at the end.
+6) Keep the user's exact numbers and units, and show working for maths and science.
+SYMBOLS: write science and maths with real symbols. Greek: α β γ δ Δ θ λ μ π ρ σ τ φ ω Ω. Operators: + − × ÷ ± = ≠ ≈ ≤ ≥ √ ∑ ∫ ∂ ∇ ∞ ∝. Arrows: → ← ↔ ⇒ ⇌ ↑ ↓. Powers and indexes: x² 10⁻⁶ v₀ H₂O CO₂. Units: m/s², N·m, J, W, Pa, °C. Explain a symbol the first time you use it. Use ✅ ❌ ⚠️ 💡 📌 sparingly to structure answers.
+PICTURE AND CLIP RECIPE (teach this when asked how to get better results): subject + action + setting + style (photo, cartoon, anime, 3D, watercolor) + light (golden hour, neon) + camera (close-up, wide, aerial) + mood. For animation say what moves: the camera (zoom, pan), the subject, glowing particles.
+DOMAINS you cover: school and university subjects, programming in any language, writing and email, business, health and fitness basics, law and money basics, cooking, travel, culture and religion with respect, careers, daily life.
+HONESTY: be accurate, say when unsure, give safe general guidance on medical, legal and money topics and suggest a professional when it matters, and refuse only truly harmful requests.
+FOLLOW-UPS: after every answer longer than two sentences, finish with one last line in exactly this format and nothing after it: >>> short question 1 | short question 2 | short question 3 (user's language, under 8 words each, things the user is likely to ask next).`;
+const SYMH={'🧮':'The user wants a precise step-by-step solution with all working shown.','🔎':'The user wants thorough research: key facts, different viewpoints, and what is uncertain.','🌍':'The user wants a translation: give it first, then a short note on tone or alternatives.','📝':'The user wants something written: deliver the finished text first.','💻':'The user wants code: give complete working code first.','💡':'Explain very simply with an everyday analogy.'};
+const symHint=t=>{const k=Object.keys(SYMH).find(x=>t.trim().indexOf(x)===0);return k?'\n'+SYMH[k]:''};
+function needHint(q){
+  const h=[],l=q.toLowerCase(),cnt=(re)=>(l.match(re)||[]).length;
+  if(cnt(/\b(kya|kaise|kyun|kyu|kab|kaun|kahan|nahi|nahin|mujhe|mujhko|hai|hain|ho|karo|kar|batao|bata|samjhao|samjha|bhai|mera|meri|aap|tum|ka|ki|ke|se|me|mein|hota|hoti|kaisa|kitna|chahiye)\b/g)>=2&&!/[ऀ-ॿ]/.test(q))h.push('The user writes romanized Hindi (Hinglish): reply in simple Hinglish using Latin letters.');
+  if(cnt(/\b(ami|amar|tumi|kemon|kivabe|kothay|kno|keno|koro|korbo|bolo|dao|ache|nei|amake|apni|ki|ki\s*kore|hoy|hoye|holo|jinish|bujhi|bujhao|bojhao|ta|eta|ekta|ke|kake|bole)\b/g)>=2&&!/[ঀ-৿]/.test(q))h.push('The user writes romanized Bengali (Banglish): reply in simple Banglish using Latin letters.');
+  if(/\b(short|brief|tldr|quick|one line|summary)\b|সংক্ষেপে|সংক্ষিপ্ত|संक्षेप|छोटा/.test(l))h.push('The user wants a SHORT answer of 2 to 4 sentences.');
+  if(/\b(detail|detailed|in depth|full explanation|step by step|elaborate)\b|বিস্তারিত|विस्तार|विस्तृत/.test(l))h.push('The user wants a thorough, detailed answer.');
+  if(/\b(eli5|simple|simply|easy way|beginner|for kids|child)\b|সহজ|आसान|सरल/.test(l))h.push('Explain in very simple words with an everyday example.');
+  if(/\b(exam|homework|assignment|viva|test tomorrow)\b|পরীক্ষা|परीक्षा/.test(l))h.push('The user is studying: show the method and the key points to remember.');
+  if(/\b(sad|depressed|anxious|stressed|lonely|scared|worried|hopeless)\b|মন খারাপ|দুশ্চিন্তা|उदास|चिंता|तनाव|अकेला/.test(l))h.push('The user may be feeling low: begin with one warm, human sentence of support before any advice.');
+  return h.length?'\nREADING THE USER: '+h.join(' '):'';
+}
+function splitSug(t){t=String(t||'');const m=t.match(/\n*>>>?\s*([^\n]*)\s*$/);if(!m)return{t:t,s:[]};return{t:t.slice(0,m.index).replace(/\s+$/,''),s:m[1].split('|').map(x=>x.replace(/^>+/,'').trim()).filter(x=>x&&x.length<90).slice(0,3)}}
+function addChips(bub,s){if(!s||!s.length)return;const c=document.createElement('div');c.className='chips';s.forEach(q=>{const b=document.createElement('button');b.textContent=q;b.onclick=()=>{inp.value=q;send()};c.appendChild(b)});bub.appendChild(c)}
+/* ---- Free engines (no key, no sign-in) + engine switcher ---- */
+const FREE={
+  llm7:{n:'LLM7',url:'https://api.llm7.io/v1',key:'unused',pref:/gpt-4|llama|qwen|deepseek|mistral|default/i,fb:'default'},
+  ovh:{n:'OVH Llama 70B',url:'https://oai.endpoints.kepler.ai.cloud.ovh.net/v1',key:'',pref:/llama-3[._]3|llama|mistral|qwen/i,fb:'Meta-Llama-3_3-70B-Instruct'}
+};
+async function pickModel(F,id){
+  const k='luxy_pm_'+id;let m=ls.get(k,'');if(m)return m;
+  try{const j=await tfetch(F.url+'/models',null,3500);const ids=((j&&j.data)||[]).map(x=>x.id).filter(x=>x&&!/embed|whisper|tts|image|rerank|moderation|speech|vision-only/i.test(x));
+    m=ids.find(x=>F.pref.test(x))||ids[0]||F.fb;ls.set(k,m)}catch(e){m=F.fb}
+  return m;
+}
+/* ---- Team mode: several free AIs draft in parallel, one merges the best answer ---- */
+function collectDrafts(msgs,engs){
+  return new Promise(res=>{
+    const out=[],acs=[];let pending=engs.length,fin=false,t2=null;
+    const done=()=>{if(fin)return;fin=true;clearTimeout(t2);clearTimeout(cap);acs.forEach(a=>{try{a.abort()}catch(e){}});res(out)};
+    const cap=setTimeout(done,14000);
+    engs.forEach(m=>{const ac=new AbortController();acs.push(ac);
+      llm(msgs,null,m,null,ac).then(t=>{if(fin)return;t=noCite(t);if(t.length>20)out.push({m,t});if(out.length>=3)done();else if(out.length===2&&!t2)t2=setTimeout(done,4000)})
+      .catch(()=>{}).finally(()=>{pending--;if(pending<=0)done()})});
+  });
+}
+async function teamAnswer(msgs,cb,E){
+  const drafts=await collectDrafts(msgs,E.slice(0,4));
+  if(!drafts.length)return null;
+  if(drafts.length===1){cb(drafts[0].t);return drafts[0].t}
+  const lastUser=[...msgs].reverse().find(m=>m.role==='user'),q=typeof lastUser.content==='string'?lastUser.content:((lastUser.content.find(x=>x.type==='text')||{}).text||'');
+  const sm=[{role:'system',content:msgs[0].content+'\nTEAM MODE: several expert assistants drafted answers to the user\'s last message. Write ONE final answer that is the most accurate, complete and clearly structured: keep what is correct and agreed on, fix mistakes and contradictions using your own knowledge, drop repetition, and keep the required format, language and the final >>> follow-up line. Never mention the drafts, the assistants or this process.'},
+    {role:'user',content:'User message:\n'+q+'\n\n'+drafts.map((d,i)=>'DRAFT '+(i+1)+':\n'+d.t.slice(0,3500)).join('\n\n')}];
+  try{return noCite(await llmFast(sm,cb,E))}catch(e){const b=drafts.sort((a,c)=>c.t.length-a.t.length)[0].t;cb(b);return b}
+}
+const ENG=['openai','llm7','ovh','mistral','llama','openai-large'];
+/* ---- instant local understanding: resolves follow-ups, no network ---- */
+function understandNow(um){
+  const t=um.t.trim(),prev=cur.m.slice(0,-1).filter(m=>m.r==='user'&&m.t);
+  if(prev.length&&t.length<45&&/\b(it|its|this|that|they|them|he|she|there|more|again|also|and)\b|এটা|সেটা|এর|তার|যেটা|यह|वह|इसका|उसका|और|aur|ar\b/i.test(t))
+    return String(prev[prev.length-1].t).slice(0,120)+' '+t;
+  return t;
+}
+const FRESH=/\b(latest|today|tonight|yesterday|current|currently|now|recent|recently|news|price|rate|score|result|results|winner|won|won't|202\d|president|prime minister|ceo|released|release date|who is|who was|population|net worth|age of)\b|সর্বশেষ|আজ|এখন|বর্তমান|খবর|दाम|आज|अभी|ताज़ा|वर्तमान|🔎/i;
+const CONCEPT=/^\W*(what\s+(is|are|was|were|does)|what's|whats|define|definition|meaning of|explain|tell me about|describe|types? of|kinds? of|who (is|was|are)|how (does|do|is) .{2,40} work|কী|কি\s|কাকে বলে|কাকে বলা|সংজ্ঞা|ব্যাখ্যা|क्या\s|किसे|किसको|परिभाषा|क्या होता|kya hai|kise kehte|ki\s+(hoy|holo|jinish)|ke bole|kake bole)|\b(kya hota hai|kya hai|ki hoy|ki jinish|kake bole|কাকে বলে|কী|क्या है|किसे कहते|क्या होता है)\b|\bfull form\b|\bdefine\b/i;
+function isConcept(q){const t=q.trim().replace(/[?!.।]+$/,'');if(CONCEPT.test(t))return true;const w=t.split(/\s+/);return w.length<=3&&w.length>=1&&t.length<30&&!/[0-9=+*/]/.test(t)&&!TASK.test(t)&&!/^(hi|hello|hey|hlw|thanks|thank you|ok|okay|yes|no|hii+)$/i.test(t)}
+const APPQ=/\b(luxy|image|video|comic|animation|animate|symbol|shortcut|voice|picture|photo|draw|settings?|history|upload|camera|how to (use|make|gen)|what can you)\b|🎨|🎬|📖|ছবি|ভিডিও|কমিক|तस्वीर|वीडियो|कॉमिक/i;
+const KNOW_MIN=`You are Luxy AI by Afraz Studio, running inside the Luxy AI app (pictures: /image or 🎨; 10-second animated clips: /video or 🎬; comics: /comic or 📖; symbols guide: type "symbols"). Write science and maths with real Unicode symbols (α β Δ θ λ μ π Ω × ÷ √ ≈ → x² v₀ H₂O), never LaTeX. After every answer longer than two sentences finish with one last line exactly like: >>> question 1 | question 2 | question 3 (user's language, under 8 words each).`;
+function langHint(q){
+  const rl=cfg.rl;
+  const names={en:'English',bn:'Bengali (বাংলা script)',hi:'Hindi (देवनागरी script)'};
+  let s='\nLANGUAGE: ';
+  if(rl&&names[rl])s+='ALWAYS reply in '+names[rl]+', whatever language the user writes in. ';
+  else s+='Reply in the language the user writes in (English, Bengali or Hindi, using its own script; romanized Hindi/Bengali gets the same romanized style). ';
+  s+='UNDERSTANDING: the user may write broken or phonetic English, spelling mistakes, missing words, slang, voice-typing errors, or Bengali/Hindi typed in English letters. Silently repair the text, find the most likely meaning from the whole conversation, and answer THAT. Never complain that you cannot understand; never ask the user to rephrase. Do not mention the corrections.';
+  return s;
+}
+const CFORMAT=`\nCONCEPT FORMAT (the user asks what something is): answer in exactly this clear structure, using short bold headings written in the user's language:
+1. **Definition**: 2 to 3 plain sentences defining the thing, then its main purpose in one line.
+2. **Types**: list every main type or kind as a numbered item. For EACH type give its own clear definition (1 to 2 sentences) and one real example. If the topic has no types, give **Main parts** or **Key features** the same way.
+3. **How it works** (short, only if it helps).
+4. **Everyday examples** (3 to 5 bullets).
+5. **Quick summary** (one sentence).
+Example: for "what is machine" first define a machine, then the types (simple machines: lever, pulley, wheel and axle, inclined plane, wedge, screw; compound machines; mechanical, electrical, electronic machines, etc.), then define each type with an example. Be complete but tight: no filler, no repeating the question.`;
+/* ---- hedged streaming: starts the fastest engine first, races a backup if slow, fails over instantly ---- */
+function llmFast(msgs,onChunk,models,retry){
+  return new Promise((resolve,reject)=>{
+    const A=[],timers=[];let done=false,win=-1,last='',next=0,live=0;const note=i=>{try{if(!retry&&A[i]&&A[i].m&&A[i].m!=='searchgpt')ls.set('luxy_eng',A[i].m)}catch(e){}};
+    const killOthers=k=>A.forEach((a,i)=>{if(i!==k&&!a.dead){a.dead=true;live--;try{a.ac.abort()}catch(e){}}});
+    const fin=(f,v)=>{if(done)return;done=true;timers.forEach(clearTimeout);killOthers(-1);f(v)};
+    function launch(){
+      if(done||next>=models.length)return false;
+      const i=A.length,a={ac:new AbortController(),dead:false,m:null};A.push(a);live++;const m=models[next++];a.m=m;
+      llm(msgs,t=>{if(a.dead||done)return;if(win<0){win=i;killOthers(i);timers.forEach(clearTimeout)}if(win===i){last=t;onChunk&&onChunk(t)}},m,null,a.ac)
+      .then(out=>{if(a.dead||done)return;if(win<0||win===i){note(i);fin(resolve,out)}})
+      .catch(e=>{if(a.dead||done)return;a.dead=true;live--;
+        if(win===i){if(last.length>60){note(i);return fin(resolve,last)}win=-1}
+        if(live<=0){if(!launch()){if(retry)fin(reject,e);else{timers.push(setTimeout(()=>{if(done)return;llmFast(msgs,onChunk,models.slice(0,3),true).then(v=>fin(resolve,v),er=>fin(reject,er))},2500))}}}});
+      return true;
+    }
+    launch();
+    [3500,8000].forEach(ms=>timers.push(setTimeout(()=>{if(win<0)launch()},ms)));
+  });
+}
+async function think(um,onChunk){
+  const q=um.t,l=detect(q)||lang,T=LC.reply(um),handled=!T.startsWith('I did not understand');
+  const needLLM=um.imgs.length||um.files.length||WX.test(q)||NWt.test(q)||/joke|funny|quote|motivat|inspire|উক্তি|প্রেরণা|प्रेरक/i.test(q);
+  if(handled&&!needLLM)return{t:T,s:[]};
+  const ck='luxy_c_'+q.trim().toLowerCase().replace(/\s+/g,' ');
+  if(!um.imgs.length&&!um.files.length&&cur.m.length<=1&&!FRESH.test(q)&&!NWt.test(q)&&!WX.test(q)&&HIST){try{const c=localStorage.getItem(ck);if(c&&c.length>40)return{t:c,s:[]}}catch(e){}}
+  const sq=understandNow(um);
+  const live=[],direct=[],hits=[],nws=[],jobs=[];
+  const J=f=>jobs.push(f().then(()=>{},()=>{}));
+  if(WX.test(q))J(async()=>{const left=q.replace(WXW,' ').replace(/\s+/g,' ').trim();const p=(left.length>1&&left.length<40?await geo(left):null)||await locate(true);if(!p)return;const w=await weather(p);live.push('Live weather: '+w.l);direct.push(w.l)});
+  const cm=q.toLowerCase().match(/(\d+(?:\.\d+)?)?\s*([^\s\d]+)\s+(?:to|in|into)\s+([^\s\d?]+)/);
+  if(cm&&CUR[cm[2]]&&CUR[cm[3]])J(async()=>{const j=await tfetch('https://open.er-api.com/v6/latest/'+CUR[cm[2]],null,3500);const a=+cm[1]||1,s=a+' '+CUR[cm[2]]+' = '+(a*j.rates[CUR[cm[3]]]).toFixed(2)+' '+CUR[cm[3]];live.push('Live exchange rate: '+s);direct.push(s)});
+  const topic=clean(sq),nt=sq.replace(NWg,' ').replace(/[?]/g,'').replace(/\s+/g,' ').trim();
+  const wantSearch=!(TASK.test(sq.trim())||q.length>220||/[{};]{2,}|\bdef\s|function\s*\(|\bclass\s+\w+|\bimport\s+\w+/.test(q)||um.files.length||um.imgs.length);
+  const fresh=FRESH.test(q)||NWt.test(q);
+  const lookup=wantSearch&&fresh&&!(cfg.ceUrl&&cfg.ceKey);
+  if(lookup){J(async()=>{(await wiki(topic,l,3,0)).forEach(h=>hits.push(h))});if(l!=='en')J(async()=>{(await wiki(topic,'en',2,2)).forEach(h=>hits.push(h))})}
+  if((lookup||NWt.test(q))&&q.length>6)J(async()=>{(await news(NWt.test(q)&&nt.length>2?nt:topic,l)).forEach(n=>nws.push(n))});
+  if(jobs.length)await Promise.race([Promise.all(jobs),sleep(2500)]);
+  const uniq=[];hits.slice().sort((a,b)=>a.p-b.p).forEach(h=>{if(!uniq.some(u=>u.t===h.t))uniq.push(h)});
+  const kb=uniq.slice(0,4).map(h=>h.t+': '+h.x.slice(0,900)).join('\n\n');
+  const nw=nws.slice(0,5).map(x=>'- '+x.t+' ('+x.d+')').join('\n');
+  const ctx=live.join('\n\n')+(kb?'\n\nREFERENCE NOTES:\n'+kb:'')+(nw?'\n\nLATEST HEADLINES:\n'+nw:'');
+  const now=new Date(),rem=ls.get('luxy_remote',{});
+  const sci=/\b(solve|calculate|find|physics|force|velocity|energy|equation|integral|derivative|resistance|voltage|current|momentum|acceleration|work done|pressure|chemistry|mole|numerical)\b|🧮|\d\s*(kg|m\/s|N|J|V|A|Ω|cm|km|g)\b|সমাধান|হিসাব|हल करो|निकालो/i.test(q);
+  const extra='\n'+(APPQ.test(q)||/^\W*(help|what can you)/i.test(q)?KNOW:KNOW_MIN)+modeP()+symHint(q)+needHint(q)+langHint(q)+(isConcept(q)&&!sci?CFORMAT:'')+'\nToday is '+now.toDateString()+', '+now.toLocaleTimeString()+'.'+(ctx?' The notes at the end are automatic and may be incomplete: use them only if they clearly match.':'')+'\nSTYLE: Be a senior expert and a brilliant teacher. Work out what the user really needs, then open with the direct answer, then structure the rest with short headings, numbered steps, bullets, a table for comparisons, and a worked example when it helps. Be precise and complete but never pad; finish with one practical tip. For medical, legal, financial or safety topics give accurate general information and say when a professional is needed. Never leave the answer empty and never say you cannot find information. NEVER mention sources, Wikipedia, searching, the internet, links, citations, numbers in brackets, or phrases like "according to"; state everything as your own knowledge.'+(sci?'\nSCIENCE AND MATH: use bold headings Given, Find, Formula, Solution (numbered steps with substitution and units), Answer (bold, with unit), Meaning (one simple sentence). Use plain Unicode symbols only (α β Δ θ λ μ ρ σ φ ω Ω π, v₀, x², m/s², 10⁻⁶, × · ÷ √ ≈ ≠ ≤ ≥ → ° ±), never LaTeX or dollar signs. Unless given otherwise use g = 9.8 m/s², c = 3×10⁸ m/s, G = 6.67×10⁻¹¹ N·m²/kg², h = 6.63×10⁻³⁴ J·s, e = 1.6×10⁻¹⁹ C, k = 9×10⁹ N·m²/C². Convert to SI first and double-check the arithmetic.':'')+(rem.system?'\n'+rem.system:'')+(ctx?'\n\nFRESH NOTES (private):\n'+ctx:'');
+  const hist=cur.m.slice(-9).map(m=>({role:m.r==='user'?'user':'assistant',content:(m.imgs&&m.imgs.length)?[{type:'text',text:m.ctx||m.t}].concat(m.imgs.map(u=>({type:'image_url',image_url:{url:u}}))):(m.ctx||m.t)}));
+  const msgs=[{role:'system',content:SYS+extra}].concat(hist);
+  const cb=t=>onChunk&&onChunk(noCite(t));
+  if(cfg.ceUrl&&cfg.ceKey){try{return{t:noCite(await llm(msgs,cb,cfg.ceModel||'gpt-4o-mini',{url:cfg.ceUrl,key:cfg.ceKey})),s:[]}}catch(e){window.__eng='Your own engine failed ('+friendly(e)+'). I used the free engine instead.'}}
+  try{const EL=(()=>{const w=ls.get('luxy_eng','');const pk=w;let E=pk&&ENG.includes(pk)?[pk].concat(ENG.filter(x=>x!==pk)):ENG;return(NWt.test(q)||WX.test(q))?['searchgpt'].concat(E):E})();
+    let R=null;if(!/^\W*(hi+|hello|hey|hlw|thanks?|thank you|ok(ay)?|yes|no|bye|good (morning|night|evening))\b/i.test(q)||q.length>25){try{R=await teamAnswer(msgs,cb,EL)}catch(e){}}
+    if(!R)R=noCite(await llmFast(msgs,cb,EL));
+    try{if(HIST&&cur.m.length<=1&&!FRESH.test(q)&&!um.imgs.length&&!um.files.length&&R.length>80)localStorage.setItem(ck,R)}catch(e){}return{t:R,s:[]}}catch(e){window.__why=String((e&&e.message)||e).slice(0,60)}
+  if(um.files.length&&handled)return{t:T,s:[]};
+  const parts=[];
+  if(direct.length)parts.push(direct.join('\n\n'));
+  uniq.slice(0,3).forEach(h=>parts.push('**'+h.t+'**\n'+h.x));
+  if(nw&&(NWt.test(q)||!uniq.length))parts.push(nw);
+  if(!parts.length&&wantSearch!==false&&q.length>2){try{const w=await Promise.race([wiki(topic,l,2,0),sleep(3500).then(()=>[])]);w.slice(0,2).forEach(h=>parts.push('**'+h.t+'**\n'+h.x))}catch(e){}}
+  if(parts.length)return{t:parts.join('\n\n'),s:[]};
+  return{t:(BUSY[l]||BUSY.en)+(window.__why?'\n\n('+window.__why+')':''),s:[]};
+}
+
+/* markdown */
+/* Physics symbols: turns any LaTeX into clean Unicode */
+const SUP={'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','+':'⁺','-':'⁻','−':'⁻','=':'⁼','(':'⁽',')':'⁾',n:'ⁿ'};
+const SUB={'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉','+':'₊','-':'₋','=':'₌','(':'₍',')':'₎',a:'ₐ',e:'ₑ',h:'ₕ',i:'ᵢ',j:'ⱼ',k:'ₖ',l:'ₗ',m:'ₘ',n:'ₙ',o:'ₒ',p:'ₚ',r:'ᵣ',s:'ₛ',t:'ₜ',u:'ᵤ',v:'ᵥ',x:'ₓ'};
+const GR={alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',varepsilon:'ε',zeta:'ζ',eta:'η',theta:'θ',vartheta:'θ',lambda:'λ',mu:'μ',nu:'ν',xi:'ξ',pi:'π',rho:'ρ',sigma:'σ',tau:'τ',phi:'φ',varphi:'φ',chi:'χ',psi:'ψ',omega:'ω',Gamma:'Γ',Delta:'Δ',Theta:'Θ',Lambda:'Λ',Pi:'Π',Sigma:'Σ',Phi:'Φ',Psi:'Ψ',Omega:'Ω'};
+const mapS=(s,M)=>s&&[...s].every(c=>M[c])?[...s].map(c=>M[c]).join(''):null;
+function sym(t){
+  if(!/[\\^_]/.test(t)||/https?:/.test(t))return t;
+  if(/\\[a-zA-Z(\[]/.test(t)){
+    t=t.replace(/\$\$?|\\\(|\\\)|\\\[|\\\]/g,'');
+    for(let i=0;i<3;i++)t=t.replace(/\\[dt]?frac\{([^{}]*)\}\{([^{}]*)\}/g,(m,a,b)=>(/^[\w.]+$/.test(a)?a:'('+a+')')+'/'+(/^[\w.]+$/.test(b)?b:'('+b+')'));
+    t=t.replace(/\\sqrt\{([^{}]*)\}/g,'√($1)').replace(/\\(?:text|mathrm|mathbf|operatorname)\{([^{}]*)\}/g,'$1').replace(/\\(?:vec|overrightarrow)\{([^{}]*)\}/g,'$1\u20D7')
+     .replace(/\\times/g,'×').replace(/\\cdot/g,'·').replace(/\\div/g,'÷').replace(/\\approx/g,'≈').replace(/\\neq/g,'≠').replace(/\\leq?/g,'≤').replace(/\\geq?/g,'≥').replace(/\\pm/g,'±').replace(/\\rightarrow|\\to/g,'→').replace(/\\infty/g,'∞').replace(/\\circ/g,'°').replace(/\\(?:left|right)/g,'').replace(/\\[,;! ]/g,' ')
+     .replace(/\\([A-Za-z]+)/g,(m,n)=>GR[n]||m);
+  }
+  t=t.replace(/\^\{([^{}]*)\}|\^([-−+]?\d+)/g,(m,a,b)=>mapS(a||b,SUP)||m);
+  t=t.replace(/([A-Za-zα-ωΑ-Ω)])(?:_\{([^{}]*)\}|_(\d+))/g,(m,a,b,c)=>{const r=mapS(b||c,SUB);return r?a+r:m});
+  return t;
+}
+function md(t){
+  t=splitSug(t).t;const parts=t.split(/```/);
+  const inl=s=>s.replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*\n]+)\*\*/g,'<b>$1</b>').replace(/(^|[\s(])\*([^*\s][^*\n]*?)\*(?=[\s).,!?:;]|$)/g,'$1<i>$2</i>').replace(/\[([^\]\n]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener" style="color:var(--gold2)">$1</a>');
+  const cells=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+  const isRow=l=>/^\s*\|.*\|\s*$/.test(l),isSep=l=>/^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l);
+  const UL=/^\s*[-*•]\s+/,OL=/^\s*\d+[.)]\s+/;
+  return parts.map((p,i)=>{
+    if(i%2){const nl=p.indexOf('\n');return '<pre><code>'+esc(p.slice(nl+1).replace(/\n$/,''))+'</code></pre>'}
+    const L=esc(sym(p)).split('\n');let o='',k=0,m;
+    while(k<L.length){
+      const ln=L[k];
+      if(isRow(ln)&&k+1<L.length&&isSep(L[k+1])){const hd=cells(ln),rows=[];k+=2;while(k<L.length&&isRow(L[k])){rows.push(cells(L[k]));k++}
+        o+='<table><thead><tr>'+hd.map(c=>'<th>'+inl(c)+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+inl(c)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';continue}
+      if(m=ln.match(/^#{1,4}\s+(.+)$/)){o+='<h4>'+inl(m[1])+'</h4>';k++;continue}
+      if(UL.test(ln)){const it=[];while(k<L.length&&UL.test(L[k])){it.push(L[k].replace(UL,''));k++}o+='<ul>'+it.map(x=>'<li>'+inl(x)+'</li>').join('')+'</ul>';continue}
+      if(OL.test(ln)){const it=[];while(k<L.length&&OL.test(L[k])){it.push(L[k].replace(OL,''));k++}o+='<ol>'+it.map(x=>'<li>'+inl(x)+'</li>').join('')+'</ol>';continue}
+      if(!ln.trim()){k++;continue}
+      const para=[];while(k<L.length&&L[k].trim()&&!/^(#{1,4}\s)/.test(L[k])&&!UL.test(L[k])&&!OL.test(L[k])&&!(isRow(L[k])&&k+1<L.length&&isSep(L[k+1]))){para.push(L[k]);k++}
+      if(!para.length){para.push(L[k]);k++}
+      o+='<p>'+para.map(inl).join('<br>')+'</p>';
+    }
+    return o;
+  }).join('');
+}
+
+/* render */
+function renderList(){
+  const l=$('#list');l.innerHTML='';
+  if(!chats.length){l.innerHTML='<div style="padding:14px;color:var(--mut);font-size:13px">Your chats will appear here.</div>';return}
+  chats.slice().sort((a,b)=>b.t-a.t).forEach(c=>{
+    const d=document.createElement('div');d.className='item'+(cur&&cur.id===c.id?' on':'');
+    d.innerHTML='<span>'+esc(c.title)+'</span><button aria-label="Delete">🗑</button>';
+    d.onclick=()=>{cur=c;renderChat();renderList();closeSide()};
+    d.querySelector('button').onclick=e=>{e.stopPropagation();chats=chats.filter(x=>x!==c);if(cur===c)cur=null;save();renderList();renderChat()};
+    l.appendChild(d);
+  });
+}
+const PROMPTS=[['✉️','Write a polite email','Write a polite, professional email. Ask me what it is about first.'],['🌐','Translate text','Translate text for me. Ask me the text and the target language.'],['📅','Plan my day','Help me plan my day with a realistic schedule. Ask what I need to get done.'],['📚','Explain simply','Explain a topic to me like I am a beginner. Ask me which topic.'],['💻','Help with code','Help me write or fix code. Ask me the language and the problem.'],['🧾','Summarise','Summarise text or a file I share. Ask me to paste or upload it.']];
+function renderChat(){
+  const box=$('#msgs');box.innerHTML='';
+  if(!cur||!cur.m.length){
+    box.innerHTML='<div id="hero"><div class="orb s"><i></i><i></i><i></i><b></b><em>L</em></div><h1>Luxy AI</h1><div id="tagl"></div><p>'+I[lang].hero+'</p><div class="strip"></div><div id="brief"></div><div class="grid"></div></div>';heroInit();
+    I[lang].prompts.forEach(([e,t,p])=>{const b=document.createElement('button');b.innerHTML='<b>'+e+'</b>'+t;b.onclick=()=>{$('#inp').value=p;send()};box.querySelector('.grid').appendChild(b)});
+    fillBrief();return;
+  }
+  cur.m.forEach(addMsg);scrollEnd();
+}
+function addMsg(m){
+  const d=document.createElement('div');d.className='msg '+m.r;
+  let h='';(m.imgs||[]).forEach(u=>h+='<img src="'+u+'" alt="">');(m.files||[]).forEach(f=>h+='<span class="chip-file">📄 '+esc(f)+'</span> ');
+  d.innerHTML='<div class="bub">'+h+(m.r==='user'?esc(m.t).replace(/\n/g,'<br>'):md(m.t))+'</div>';
+  $('#msgs').appendChild(d);if(m.r==='model'&&m.t){if(m.gen)genAttach(d.querySelector('.bub'),m.gen);addActs(d,m.t);if(m.sug&&m.sug.length&&cur&&m===cur.m[cur.m.length-1])addChips(d.querySelector('.bub'),m.sug)}return d;
+}
+const scrollEnd=()=>{const c=$('#chat');c.scrollTop=c.scrollHeight};
+
+/* attachments */
+function shrink(file){return new Promise(res=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const M=1024,k=Math.min(1,M/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=im.width*k;cv.height=im.height*k;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);res(cv.toDataURL('image/jpeg',.8))};im.onerror=()=>res(null);im.src=r.result};r.onerror=()=>res(null);r.readAsDataURL(file)})}
+async function addFiles(files,isImg){
+  for(const f of files){
+    if(isImg||f.type.startsWith('image/')){const u=await shrink(f);if(u)pend.push({img:u})}
+    else{const t=await f.text();pend.push({name:f.name,text:t.slice(0,60000)})}
+  }
+  renderPrev();
+}
+function renderPrev(){
+  const p=$('#prev');p.innerHTML='';
+  pend.forEach((a,i)=>{const d=document.createElement('div');d.className='pv';d.innerHTML=(a.img?'<img src="'+a.img+'" alt="">':'<div class="f">📄 '+esc(a.name.slice(0,14))+'</div>')+'<button aria-label="Remove">×</button>';d.querySelector('button').onclick=()=>{pend.splice(i,1);renderPrev()};p.appendChild(d)});
+}
+$('#plus').onclick=e=>{e.stopPropagation();const m=$('#attmenu');m.style.display=m.style.display==='block'?'none':'block'};
+document.addEventListener('click',()=>$('#attmenu').style.display='none');
+$('#attmenu').onclick=e=>{const a=e.target.dataset.a;if(a==='cam')$('#fCam').click();if(a==='gal')$('#fGal').click();if(a==='file')$('#fFile').click();if(a==='img'||a==='vid'||a==='cmc'){inp.value='/'+(a==='img'?'image':a==='vid'?'video':'comic')+' ';inp.focus()}};
+['fCam','fGal'].forEach(id=>$('#'+id).onchange=e=>{addFiles([...e.target.files],true);e.target.value=''});
+$('#fFile').onchange=e=>{addFiles([...e.target.files],false);e.target.value=''};
+
+/* Luxy Core: built-in offline engine, no API needed */
+const LC=(()=>{
+const LEN={km:1000,m:1,cm:.01,mile:1609.344,miles:1609.344,mi:1609.344,ft:.3048,feet:.3048,inch:.0254,inches:.0254};
+const MAS={kg:1,g:.001,lb:.45359237,lbs:.45359237,pound:.45359237,pounds:.45359237,oz:.0283495};
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const JOKES=['Why do programmers prefer dark mode? Because light attracts bugs.','Why was the math book sad? It had too many problems.','There are 10 kinds of people: those who understand binary and those who do not.'];
+const QUOTES=['Small steps every day beat big plans someday.','Discipline is choosing what you want most over what you want now.','Start where you are. Use what you have. Do what you can.'];
+const nt=()=>ls.get('luxy_notes',[]),td=()=>ls.get('luxy_todos',[]);
+const HELP='- **Math:** "25% of 480", "sqrt(144) + 8"\n- **Convert:** "10 km to miles", "100 f to c"\n- **Notes:** "note: call Ali at 5", "show notes"\n- **Tasks:** "todo: buy milk", "show tasks", "done 1"\n- **Files:** upload a text file and I will summarise it\n- **Quick:** time, date, joke, quote, password, coin, dice\n- **Create:** 🎨 pictures, 🎬 animated clips up to 10 s, 📖 comics (type "symbols")';
+const SYMTAB=['**✨ Luxy symbol shortcuts** (start your message with one)','🎨 picture · 🎬 animated clip (3–10 s) · 📖 comic book','🧮 step-by-step solution · 🔎 deep research · 🌍 translate','📝 write · 💻 code · 💡 explain simply','','**Commands:** /image idea · /video idea, 10 seconds · /comic story, 8 pages · /video topic, 5 minutes','Attach a photo and say **animate** to make it move.','','**Maths and science symbols**','Greek: α β γ δ Δ θ λ μ π ρ σ τ φ ω Ω','Operators: + − × ÷ ± = ≠ ≈ ≤ ≥ √ ∑ ∫ ∂ ∇ ∞ ∝','Arrows: → ← ↔ ⇒ ⇌ ↑ ↓','Powers and indexes: x² 10⁻⁶ v₀ H₂O CO₂','Units: m/s² · N·m · J · W · Pa · °C · Ω','','Type **physics formulas** for a formula sheet.'].join('\n');
+const SHEET=['**Physics formula sheet**','**Motion:** v = u + at · s = ut + ½at² · v² = u² + 2as','**Projectile:** R = u²sin2θ / g · H = u²sin²θ / 2g · T = 2u sinθ / g','**Force:** F⃗ = ma⃗ · W = mg · f = μN · p⃗ = mv⃗ · J = FΔt','**Energy:** W = Fs cosθ · KE = ½mv² · PE = mgh · P = W/t · η = (output/input) × 100%','**Circular motion:** v = ωr · a = v²/r = ω²r · T = 2π/ω','**Gravitation:** F = Gm₁m₂/r² · g = GM/R² · vₑ = √(2GM/R)','**Waves:** v = fλ · f = 1/T · n = c/v','**Electricity:** V = IR · P = VI = I²R · R = ρl/A · F = kq₁q₂/r²','**Heat:** Q = mcΔT · Q = mL · PV = nRT · η = 1 − T₂/T₁','**Optics:** 1/f = 1/v − 1/u · m = v/u · n₁sinθ₁ = n₂sinθ₂','**Constants:** g = 9.8 m/s² · c = 3×10⁸ m/s · G = 6.67×10⁻¹¹ N·m²/kg² · h = 6.63×10⁻³⁴ J·s · e = 1.6×10⁻¹⁹ C · k = 9×10⁹ N·m²/C²','','Send me any physics problem and I will solve it step by step.'].join('\n');
+function sum(t){const s=(t.replace(/\s+/g,' ').match(/[^.!?\u0964]+[.!?\u0964]*/g)||[]).map(x=>x.trim()).filter(x=>x.length>20);if(s.length<=3)return s.join(' ');const f={};(t.toLowerCase().match(/[a-z]{4,}/g)||[]).forEach(w=>f[w]=(f[w]||0)+1);const sc=s.map((x,i)=>({i,x,v:(x.toLowerCase().match(/[a-z]{4,}/g)||[]).reduce((a,w)=>a+f[w],0)/Math.sqrt(x.length)}));return sc.sort((a,b)=>b.v-a.v).slice(0,Math.min(4,Math.ceil(s.length/4))).sort((a,b)=>a.i-b.i).map(o=>o.x).join(' ')}
+function calc(t){let e=t.replace(/what('s| is)|calculate|solve|=|\?/g,'').replace(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/g,'($1/100*$2)').replace(/plus/g,'+').replace(/minus/g,'-').replace(/times|multiplied by|\sx\s/g,'*').replace(/divided by|over/g,'/').replace(/\^/g,'**').replace(/sqrt/g,'Math.sqrt').replace(/,/g,'');
+ const chk=e.replace(/Math\.sqrt/g,'').trim();if(!/^[\d\s+\-*/().%]+$/.test(chk)||!/\d\s*[+\-*/%]\s*\(?-?\d|Math\.sqrt|\)\s*[+\-*/]/.test(e))return null;
+ try{const v=Function('"use strict";return('+e+')')();return typeof v==='number'&&isFinite(v)?+v.toPrecision(12):null}catch(x){return null}}
+function conv(t){const m=t.match(/(-?\d+(?:\.\d+)?)\s*(?:°\s*)?([a-z]+)\s+(?:to|in|into)\s+(?:°\s*)?([a-z]+)/);if(!m)return null;const v=+m[1],a=m[2],b=m[3];
+ const T={c:'c',celsius:'c',f:'f',fahrenheit:'f',k:'k',kelvin:'k'};
+ if(T[a]&&T[b]){const c=T[a]=='c'?v:T[a]=='f'?(v-32)*5/9:v-273.15;const r=T[b]=='c'?c:T[b]=='f'?c*9/5+32:c+273.15;return v+'° '+a+' = '+(+r.toFixed(2))+'° '+b}
+ for(const G of[LEN,MAS])if(G[a]&&G[b])return v+' '+a+' = '+(+(v*G[a]/G[b]).toFixed(4))+' '+b;return null}
+function reply(m){
+ const raw=(m.ctx||m.t).trim(),user=m.t.toLowerCase().trim().replace(/[?!.\u0964\s]+$/,'');let x;
+ if(m.files&&m.files.length){const body=raw.replace(/^[\s\S]*?\[File: [^\]]*\]\n/,'');return '**Summary of '+m.files.join(', ')+'**\n\n'+(sum(body)||'The file is too short to summarise.')+'\n\nLength: '+body.split(/\s+/).filter(Boolean).length+' words.'}
+ if(m.imgs&&m.imgs.length)return 'I received your picture, but reading images needs the online brain. Please check your internet and send it again.';
+ if(x=user.match(/^my name is ([a-z]{1,20}(?: [a-z]{1,20})?)$/)){ls.set('luxy_name',x[1].trim());return 'Nice to meet you, '+x[1].trim()+'! I will remember your name.'}
+ if(/^(what('s| is) my name|who am i)$/.test(user)){const n=ls.get('luxy_name','');return n?'Your name is '+n+'.':'I do not know your name yet. Tell me: "my name is ..."'}
+ if(/^((hi+|hello|hey|salam|assalam|assalamu alaikum|namaste|yo)( luxy( ai)?)?|নমস্কার|হ্যালো|হাই|আসসালামু আলাইকুম|নমস্তে|नमस्ते|नमस्कार|हैलो|हाय)$/.test(user)){const n=ls.get('luxy_name','');return I[detect(user)||lang].hi.replace('{n}',n?' '+n:'')}
+ if(/^(who are you|what('s| is) your name|who (made|created|built) you|who is your (creator|developer)|কে বানিয়েছে|তোমাকে কে বানিয়েছে|তুমি কে|আপনি কে|तुम्हें किसने बनाया|आपको किसने बनाया|आप कौन हैं|तुम कौन हो)$/.test(user))return I[detect(user)||lang].who;
+ if(/^(help|menu|commands|features|what can you do)$/.test(user))return HELP;
+ if(x=raw.match(/^(?:note|remember|save)\s*:\s*([\s\S]+)/i)){const n=nt();n.push(x[1].trim());ls.set('luxy_notes',n);return 'Saved note #'+n.length+'.'}
+ if(/^(show|list|view|my)( my)? notes$/.test(user)){const n=nt();return n.length?'**Your notes**\n'+n.map((s,i)=>'- '+(i+1)+'. '+s).join('\n'):'You have no notes. Type "note: your text" to save one.'}
+ if(/^clear( my)? notes$/.test(user)){ls.set('luxy_notes',[]);return 'All notes cleared.'}
+ if(x=raw.match(/^(?:todo|task|add task)\s*:\s*([\s\S]+)/i)){const n=td();n.push({t:x[1].trim(),d:0});ls.set('luxy_todos',n);return 'Added task #'+n.length+': '+x[1].trim()}
+ if(x=user.match(/^(?:done|finish|complete)\s+(\d+)$/)){const n=td();if(n[x[1]-1]){n[x[1]-1].d=1;ls.set('luxy_todos',n);return 'Marked task '+x[1]+' as done.'}return 'No task with that number.'}
+ if(/^(show|list|view|my)( my)? (todos?|tasks|to-do list)$/.test(user)){const n=td();return n.length?'**Your tasks**\n'+n.map((o,i)=>'- '+(i+1)+'. '+(o.d?'✅ ':'⬜ ')+o.t).join('\n'):'No tasks yet. Type "todo: buy milk" to add one.'}
+ if(/^clear( my)? (todos?|tasks)$/.test(user)){ls.set('luxy_todos',[]);return 'All tasks cleared.'}
+ if(/^(what('s| is)\s+)?(the\s+)?(current\s+)?(time|date|day)(\s+(now|today))?$/.test(user)){const d=new Date();return d.toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'})+', '+d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
+ if(user.length<40&&(x=conv(user)))return x;
+ if(user.length<60&&(x=calc(user))!==null)return 'The answer is **'+x+'**';
+ if(/^(tell me (a |some )?)?(joke|something funny)s?$/.test(user))return pick(JOKES);
+ if(/^(give me |tell me |share )?(a |an |some )?(motivational |inspirational |inspiring )?quote$/.test(user))return pick(QUOTES);
+ if(/^((flip|toss)( a)? coin|heads or tails)$/.test(user))return pick(['Heads','Tails']);
+ if(/^(roll|throw)( a| the)? (dice|die)$/.test(user))return 'You rolled a **'+(1+Math.floor(Math.random()*6))+'**';
+ if(/^(generate|make|create|give me|suggest)( me)?( a)?( strong| secure| random)* password$/.test(user)){const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';let p='';crypto.getRandomValues(new Uint32Array(16)).forEach(v=>p+=c[v%c.length]);return 'Strong password:\n```\n'+p+'\n```'}
+ if(/^(physics formulas?|formulas? (of|for) physics|physics formula sheet)$/.test(user))return SHEET;
+ if(/^(symbols?|symbol (list|sheet|guide|table)|shortcuts?|প্রতীক|চিহ্ন|प्रतीक|चिह्न)$/.test(user))return SYMTAB;
+ return 'I did not understand that offline. Here is what I can do:\n\n'+HELP;
+}
+return{reply}})();
+
+/* send */
+const inp=$('#inp');
+inp.oninput=()=>{inp.style.height='auto';inp.style.height=Math.min(inp.scrollHeight,140)+'px'};
+inp.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey&&innerWidth>820){e.preventDefault();send()}};
+$('#send').onclick=send;
+
+async function send(){
+  if(busy)return;
+  document.querySelectorAll('.chips').forEach(e=>e.remove());
+  const text=inp.value.trim();
+  if(!text&&!pend.length)return;
+  if(!cur){cur={id:Date.now()+'',t:Date.now(),title:(text||'Image chat').slice(0,40),m:[]};chats.push(cur)}
+  let full=text;pend.filter(a=>a.text).forEach(a=>full+='\n\n[File: '+a.name+']\n'+a.text);
+  const um={r:'user',t:text||(pend.some(a=>a.img)?'What is in this picture?':'Please look at the attached file.'),imgs:pend.filter(a=>a.img).map(a=>a.img),files:pend.filter(a=>a.name).map(a=>a.name),ctx:full||undefined};
+  if(!text&&!full.trim())um.ctx=um.t;
+  cur.m.push(um);cur.t=Date.now();
+  pend=[];renderPrev();inp.value='';inp.style.height='auto';
+  if(cur.m.length===1)renderChat();else addMsg(um);
+  renderList();
+  const th=addMsg({r:'model',t:''});th.querySelector('.bub').innerHTML='<div class="dots"><span></span><span></span><span></span></div>';scrollEnd();
+  busy=true;const bub=th.querySelector('.bub'),mk=(!um.imgs.length&&!um.files.length)?mediaIntent(um.t):((um.imgs.length&&!um.files.length&&ANIMW.test(um.t))?{k:'photoanim',sec:secOf(um.t)||6}:null);
+  let r;try{r=mk?await genMedia(mk,um):await think(um,t=>{bub.innerHTML=md(t);scrollEnd()})}catch(e){r={t:LC.reply(um),s:[]}}
+  const out0=(r.t||LC.reply(um))+(window.__eng?'\n\n⚠ '+window.__eng:'');window.__eng='';const sp=splitSug(out0),out=sp.t;
+  cur.m.push({r:'model',t:out,gen:r.gen,sug:sp.s});bub.innerHTML=md(out);
+  if(r.gen)genAttach(bub,r.gen);addActs(th,out);if(!r.gen)addChips(bub,sp.s);
+  if(cfg.auto&&!r.gen)speak(out,detect(out)||lang);
+  busy=false;save();renderList();scrollEnd();syncSoon();
+}
+
+/* nav + settings */
+const closeSide=()=>$('#side').classList.remove('open');
+$('#menu').onclick=()=>$('#side').classList.add('open');
+$('#scrim').onclick=closeSide;
+const newChat=()=>{cur=null;renderChat();renderList();closeSide()};
+$('#newchat').onclick=newChat;$('#newtop').onclick=newChat;
+$('#clearall').onclick=()=>{if(confirm(I[lang].delq)){chats=[];cur=null;save();renderList();renderChat()}};
+function openSet(){$('#spers').value=cfg.pers;$('#sceu').value=cfg.ceUrl||'';$('#sck').value=cfg.ceKey||'';$('#scm').value=cfg.ceModel||'';$('#scity').value=cfg.city||'';$('#surl').value=cfg.url||'';$('#srl').value=cfg.rl||'';$('#svoice').value=cfg.voice||'female';$('#sauto').checked=!!cfg.auto;acctUI();$('#set').style.display='flex'}
+$('#setbtn').onclick=()=>{openSet();closeSide()};
+$('#sclose').onclick=()=>$('#set').style.display='none';
+$('#ssave').onclick=()=>{cfg={keys:cfg.keys||{},sel:cfg.sel||'auto',key:'',model:'',ceUrl:$('#sceu').value.trim(),ceKey:$('#sck').value.trim(),ceModel:$('#scm').value.trim(),pers:$('#spers').value.trim(),city:$('#scity').value.trim(),url:$('#surl').value.trim(),voice:$('#svoice').value,rl:$('#srl').value,auto:$('#sauto').checked};ls.set('luxy_cfg',cfg);$('#set').style.display='none';boostInit()};
+
+/* ===== Luxy v2: images, video, voice, Google account, self-update ===== */
+const APP_VER=3,OTA_ENABLED=true;
+const UPDATE_URL=(window.LUXY_CONFIG&&LUXY_CONFIG.updateUrl)||'https://raw.githubusercontent.com/YOUR-USER/YOUR-REPO/main/www/index.html';
+const GM={
+en:{img:'Here is your image 🎨',vid:'Here is your video 🎬 Tap Play to watch it with voice narration.',imgf:'I could not create the image right now. Please try again in a moment.',vidf:'I could not create the video right now. Please try again in a moment.',gsetup:'Google sign-in is not set up in this build yet. The developer must add the Google Web Client ID (see the guide).',gfail:'Google sign-in failed.',nocloud:'Signed in. Cloud backup needs extra permission on this device, so use Export backup to save your data.',synced:'Synced',syncfail:'Sync failed. Try again.',play:'▶ Play',save:'⬇ Save video',signin:'Sign in with Google',signout:'Sign out',sync:'☁ Sync now',exp:'⬇ Export backup',imp:'⬆ Import backup',upd:'✨ Update ready. Tap to restart.',prep:'Preparing…',off:'Not signed in'},
+bn:{img:'এই নিন আপনার ছবি 🎨',vid:'এই নিন আপনার ভিডিও 🎬 ভয়েস বর্ণনাসহ দেখতে Play চাপুন।',imgf:'এখন ছবি বানাতে পারলাম না। একটু পরে আবার চেষ্টা করুন।',vidf:'এখন ভিডিও বানাতে পারলাম না। একটু পরে আবার চেষ্টা করুন।',gsetup:'এই বিল্ডে Google সাইন-ইন এখনো সেট করা হয়নি। ডেভেলপারকে Google Web Client ID যোগ করতে হবে।',gfail:'Google সাইন-ইন ব্যর্থ হয়েছে।',nocloud:'সাইন-ইন হয়েছে। ক্লাউড ব্যাকআপের জন্য অতিরিক্ত অনুমতি লাগবে, তাই এক্সপোর্ট ব্যাকআপ ব্যবহার করুন।',synced:'সিঙ্ক হয়েছে',syncfail:'সিঙ্ক ব্যর্থ। আবার চেষ্টা করুন।',play:'▶ চালান',save:'⬇ ভিডিও সেভ',signin:'Google দিয়ে সাইন ইন',signout:'সাইন আউট',sync:'☁ এখনই সিঙ্ক',exp:'⬇ ব্যাকআপ এক্সপোর্ট',imp:'⬆ ব্যাকআপ ইমপোর্ট',upd:'✨ আপডেট প্রস্তুত। রিস্টার্ট করতে ট্যাপ করুন।',prep:'প্রস্তুত হচ্ছে…',off:'সাইন ইন করা নেই'},
+hi:{img:'यह रही आपकी तस्वीर 🎨',vid:'यह रहा आपका वीडियो 🎬 आवाज़ के साथ देखने के लिए Play दबाएँ।',imgf:'अभी तस्वीर नहीं बन सकी। थोड़ी देर बाद फिर कोशिश करें।',vidf:'अभी वीडियो नहीं बन सका। थोड़ी देर बाद फिर कोशिश करें।',gsetup:'इस बिल्ड में Google साइन-इन अभी सेट नहीं है। डेवलपर को Google Web Client ID जोड़ना होगा।',gfail:'Google साइन-इन विफल रहा।',nocloud:'साइन-इन हो गया। क्लाउड बैकअप के लिए अतिरिक्त अनुमति चाहिए, इसलिए एक्सपोर्ट बैकअप इस्तेमाल करें।',synced:'सिंक हो गया',syncfail:'सिंक विफल। फिर कोशिश करें।',play:'▶ चलाएँ',save:'⬇ वीडियो सेव',signin:'Google से साइन इन',signout:'साइन आउट',sync:'☁ अभी सिंक',exp:'⬇ बैकअप एक्सपोर्ट',imp:'⬆ बैकअप इम्पोर्ट',upd:'✨ अपडेट तैयार। रीस्टार्ट के लिए टैप करें।',prep:'तैयार हो रहा है…',off:'साइन इन नहीं है'}};
+
+/* ---- files ---- */
+async function saveFile(blob,name){
+  const C=window.Capacitor&&Capacitor.Plugins;
+  if(C&&C.Filesystem&&C.Share){const b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(String(f.result).split(',')[1]);f.readAsDataURL(blob)});const w=await C.Filesystem.writeFile({path:name,data:b64,directory:'CACHE'});await C.Share.share({title:name,url:w.uri});return}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+}
+
+/* ---- voice (female / male) ---- */
+let voices=[];const loadVoices=()=>{try{voices=speechSynthesis.getVoices()||[]}catch(e){}};
+if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+const FEM=/female|woman|zira|samantha|susan|hazel|heera|kalpana|aria|jenny|libby|sonia|tessa|karen|moira|victoria|veena|swara|neerja|nabanita|tanishaa|google.*(hindi|bangla|bengali)/i;
+const MALE=/(^|\W)male|david|mark|daniel|alex|james|george|ravi|hemant|prabhat|bashkar|pradeep|guy|ryan|christopher|eric|madhur/i;
+function speak(t,l){
+  if(!('speechSynthesis' in window))return;speechSynthesis.cancel();
+  t=String(t).replace(/```[\s\S]*?```/g,' ').replace(/\[([^\]]+)\]\([^)]*\)/g,'$1').replace(/[*_`#>]/g,'').replace(/[\u{1F300}-\u{1FAFF}\u2600-\u27BF]/gu,'').trim();if(!t)return;
+  const loc={en:'en-US',bn:'bn-BD',hi:'hi-IN'}[l||lang]||'en-US',male=cfg.voice==='male';
+  const pool=voices.filter(v=>v.lang.replace('_','-').toLowerCase().startsWith(loc.slice(0,2)));
+  const want=male?MALE:FEM,other=male?FEM:MALE;
+  const hit=pool.find(x=>want.test(x.name)),v=hit||pool.find(x=>!other.test(x.name))||pool[0];
+  (t.match(/[^.!?\u0964\n]{1,200}[.!?\u0964]?/g)||[t]).forEach(s=>{
+    if(!s.trim())return;const u=new SpeechSynthesisUtterance(s.trim());u.lang=loc;if(v)u.voice=v;
+    u.pitch=hit?(male?.9:1.1):(male?.7:1.3);u.rate=1;speechSynthesis.speak(u)});
+}
+function micInit(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition,N=window.Capacitor&&Capacitor.Plugins&&Capacitor.Plugins.SpeechRecognition;
+  if(!SR&&!N){$('#mic').style.display='none';return}
+  $('#mic').onclick=async()=>{
+    const loc={en:'en-US',bn:'bn-BD',hi:'hi-IN'}[lang],add=t=>{if(t){inp.value=(inp.value+' '+t).trim();inp.oninput()}};
+    if(N){try{await N.requestPermissions();const r=await N.start({language:loc,maxResults:1,popup:true,partialResults:false});add(r&&r.matches&&r.matches[0])}catch(e){}return}
+    const rc=new SR();rc.lang=loc;rc.interimResults=false;$('#mic').classList.add('rec');rc.onresult=e=>add(e.results[0][0].transcript);rc.onend=()=>$('#mic').classList.remove('rec');rc.onerror=rc.onend;rc.start();
+  };
+}
+function addActs(el,text){
+  const a=document.createElement('div');a.className='act';a.innerHTML='<button data-s aria-label="Read aloud">🔊</button><button data-c aria-label="Copy">⧉</button>';
+  a.querySelector('[data-s]').onclick=()=>{try{if(speechSynthesis.speaking){speechSynthesis.cancel();return}}catch(e){}speak(text,detect(text)||lang)};
+  a.querySelector('[data-c]').onclick=()=>{try{navigator.clipboard.writeText(text.replace(/\*\*/g,''))}catch(e){}};
+  el.querySelector('.bub').appendChild(a);
+}
+
+/* ---- image and video generation ---- */
+const mediaIntent0=t=>{const s=t.trim();let m;
+  if(m=s.match(/^\/(image|img|video|vid)\s+([\s\S]+)/i))return{k:/^i/i.test(m[1])?'image':'video',p:m[2].trim()};
+  const imgW=/\b(image|picture|photo|pic|logo|wallpaper|poster|painting|illustration|artwork)\b|ছবি|চিত্র|तस्वीर|चित्र|फोटो|इमेज/i,vidW=/\bvideo\b|ভিডিও|वीडियो/i,verb=/\b(generate|create|make|draw|design|paint|imagine|render|produce)\b|আঁকো|বানাও|তৈরি|बनाओ|बनाइए|बनाएं|बना दो/i;
+  if(verb.test(s)){if(vidW.test(s))return{k:'video',p:s};if(imgW.test(s))return{k:'image',p:s}}
+  return null};
+const mediaIntentBase=t=>{const s=t.trim(),l=s.toLowerCase().replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d));let m;
+  const num=(re,d,mx)=>{const q=l.match(re);return Math.max(1,Math.min(mx,q?+q[1]:d))};
+  const PG=/(\d+)\s*(?:page|pages|পৃষ্ঠা|পাতা|पेज|पृष्ठ)/,MN=/(\d+)\s*(?:min|mins|minute|minutes|মিনিট|मिनट)/;
+  if(/^\/comic\s+/i.test(s))return{k:'comic',p:s.replace(/^\/comic\s+/i,''),n:num(PG,6,100)};
+  if((m=s.match(/^\/(?:video|vid)\s+([\s\S]+)/i))&&l.match(MN))return{k:'lvideo',p:m[1].trim(),n:num(MN,2,60)};
+  if(/\b(generate|create|make|write|draw|produce)\b|বানাও|তৈরি|লেখো|बनाओ|बनाइए|बनाएं|लिखो/.test(l)){
+    if(/comic|কমিক|कॉमिक/.test(l))return{k:'comic',p:s,n:num(PG,6,100)};
+    if(/\bvideo\b|ভিডিও|वीडियो/.test(l)&&l.match(MN))return{k:'lvideo',p:s,n:num(MN,2,60)}}
+  return mediaIntent0(t)};
+const ANIMW=/\b(animate|animation|animated|bring (it|this|them) to life|make (it|this|them) (move|alive))\b|অ্যানিমেট|এনিমেট|অ্যানিমেশন|एनिमेट|एनिमेशन|एनीमेशन/i;
+const secOf=t=>{const l=t.toLowerCase().replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d));const m=l.match(/(\d+)\s*(?:s|sec|secs|second|seconds|সেকেন্ড|सेकंड|सेकेंड)(?![a-z])/);return m?Math.max(3,Math.min(10,+m[1])):0};
+const mediaIntent=t=>{
+  const s=t.trim(),l=s.toLowerCase().replace(/[০-৯]/g,d=>'০১২৩৪৫৬৭৮৯'.indexOf(d)).replace(/[०-९]/g,d=>'०१२३४५६७८९'.indexOf(d));let m;
+  const hasMin=/(\d+)\s*(?:min|mins|minute|minutes|মিনিট|मिनट)/.test(l),sec=secOf(t);
+  if(m=s.match(/^🎨️?\s*([\s\S]+)/u))return{k:'image',p:m[1].trim()};
+  if(m=s.match(/^📖️?\s*([\s\S]+)/u)){const q=l.match(/(\d+)\s*(?:page|pages|পৃষ্ঠা|পাতা|पेज|पृष्ठ)/);return{k:'comic',p:m[1].trim(),n:Math.max(1,Math.min(100,q?+q[1]:6))}}
+  if(m=s.match(/^🎬️?\s*([\s\S]+)/u)){if(hasMin)return mediaIntentBase('/video '+m[1].trim());return{k:'video',p:m[1].trim(),sec:sec||8}}
+  if(!hasMin&&(m=s.match(/^\/(?:video|vid|anim|animate)\s+([\s\S]+)/i)))return{k:'video',p:m[1].trim(),sec:sec||8};
+  const verb=/\b(generate|create|make|draw|design|produce|render|show me|give me)\b|বানাও|তৈরি|আঁকো|দেখাও|बनाओ|बनाइए|बनाएं|दिखाओ/i;
+  if(verb.test(s)&&ANIMW.test(s)&&!hasMin&&!/\b(comic|কমিক|कॉमिक)\b/i.test(s))return{k:'video',p:s,sec:sec||8};
+  const r=mediaIntentBase(t);if(r&&r.k==='video'&&!r.sec)r.sec=sec||8;return r;
+};
+const imgUrl=(p,w,h,seed)=>'https://image.pollinations.ai/prompt/'+encodeURIComponent(p)+'?width='+w+'&height='+h+'&nologo=true&seed='+seed;
+const loadImg=(u,ms)=>new Promise((res,rej)=>{const i=new Image(),t=setTimeout(()=>rej(new Error('timeout')),ms);i.onload=()=>{clearTimeout(t);res(u)};i.onerror=()=>{clearTimeout(t);rej(new Error('img'))};i.src=u});
+async function enPrompt(p){try{return(await llm([{role:'system',content:'You write image prompts. Reply with ONE English prompt only, max 60 words, vivid and specific (subject, setting, lighting, style). No quotes, no extra text.'},{role:'user',content:p}],null,'openai')).trim().replace(/^["']|["']$/g,'')}catch(e){return p}}
+async function genMedia(mk,um){
+  const l=detect(um.t)||lang,G=GM[l],seed=Math.floor(Math.random()*1e6);
+  try{
+    if(mk.k==='comic')return await genComic(mk,um);if(mk.k==='lvideo')return await genLong(mk,um);
+    if(mk.k==='image'){const p=await enPrompt(mk.p);let u=imgUrl(p,1024,1024,seed);try{await loadImg(u,75000)}catch(e){u=imgUrl(p,1024,1024,seed+1);await loadImg(u,75000)}return{t:G.img,gen:{k:'image',u,p}}}
+    return await genClip(mk,um,G,l,seed);
+  }catch(e){return{t:mk.k==='image'?G.imgf:G.vidf}}
+}
+let vidRun=0;
+function genAttach(bub,g){
+  const w=document.createElement('div');w.className='gen';
+  if(g.k==='comic'||g.k==='lvideo'){zAttach(w,g);bub.appendChild(w);return}
+  if(g.k==='image'){
+    w.innerHTML='<img src="'+g.u+'" alt=""><div class="act"><button>⬇</button></div>';
+    w.querySelector('button').onclick=async()=>{try{saveFile(await (await fetch(g.u)).blob(),'luxy-image.jpg')}catch(e){window.open(g.u,'_blank')}};
+  }else{
+    clipPlayer(w,g);
+  }
+  bub.appendChild(w);
+}
+/* ---- Animated clips (3 to 10 seconds): camera motion, fades, sparkles, captions ---- */
+const CW=1280,CH=720,MOVES=['zoomin','panleft','zoomout','panright','tiltup','drift','tiltdown'];
+const CLIPT={en:'Here is your animated clip 🎬 ({s} seconds). Tap ▶ to watch it, ⬇ to save it.',bn:'আপনার অ্যানিমেটেড ক্লিপ 🎬 ({s} সেকেন্ড)। দেখতে ▶ আর সেভ করতে ⬇ চাপুন।',hi:'आपकी एनिमेटेड क्लिप 🎬 ({s} सेकंड)। देखने के लिए ▶ और सेव करने के लिए ⬇ दबाएँ।'};
+const CLIPCACHE=new WeakMap(),TAINT=new WeakSet();let clipRun=0;
+function clipLoad(g){
+  if(CLIPCACHE.has(g))return CLIPCACHE.get(g);
+  const p=Promise.all(g.f.map(u=>new Promise(res=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);
+    i.onerror=()=>{const j=new Image();j.onload=()=>{TAINT.add(g);res(j)};j.onerror=()=>res(null);j.src=u};i.src=u})));
+  CLIPCACHE.set(g,p);return p;
+}
+function cstar(x,cx,cy,r){x.beginPath();x.moveTo(cx,cy-r*2);x.quadraticCurveTo(cx,cy,cx+r*2,cy);x.quadraticCurveTo(cx,cy,cx,cy+r*2);x.quadraticCurveTo(cx,cy,cx-r*2,cy);x.quadraticCurveTo(cx,cy,cx,cy-r*2);x.fill()}
+function clipFrame(x,imgs,g,t){
+  const n=imgs.length,D=g.sec?g.sec*1000/n:3500,FD=Math.min(450,D*.25);
+  x.globalAlpha=1;x.fillStyle='#000';x.fillRect(0,0,CW,CH);
+  const i=Math.max(0,Math.min(n-1,Math.floor(t/D))),lt=t-i*D;
+  const shot=(k,l2,a)=>{const im=imgs[k];if(!im)return;const p=Math.max(0,Math.min(1,l2/D)),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    const mv=(g.mv&&MOVES.indexOf(g.mv[k])>=0)?g.mv[k]:MOVES[k%MOVES.length];let s=1.12,ox=0,oy=0;
+    if(mv==='zoomin')s=1.02+.16*e;else if(mv==='zoomout')s=1.18-.16*e;else if(mv==='panleft'){s=1.15;ox=.5-e}else if(mv==='panright'){s=1.15;ox=e-.5}
+    else if(mv==='tiltup'){s=1.15;oy=.5-e}else if(mv==='tiltdown'){s=1.15;oy=e-.5}else{s=1.1+.05*Math.sin(p*Math.PI);ox=Math.sin(p*Math.PI*2)*.25;oy=Math.cos(p*Math.PI*2)*.15}
+    const iw=im.naturalWidth||CW,ih=im.naturalHeight||CH,b=Math.max(CW/iw,CH/ih),w=iw*b*s,h=ih*b*s;
+    x.globalAlpha=a;x.drawImage(im,(CW-w)/2+ox*(w-CW),(CH-h)/2+oy*(h-CH),w,h);x.globalAlpha=1};
+  shot(i,lt,1);if(i<n-1&&lt>D-FD)shot(i+1,0,(lt-(D-FD))/FD);
+  const vg=x.createRadialGradient(CW/2,CH/2,CH*.35,CW/2,CH/2,CH*.95);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.42)');x.fillStyle=vg;x.fillRect(0,0,CW,CH);
+  for(let k=0;k<22;k++){const sp=(k*.6180339+t/9000)%1;x.globalAlpha=Math.sin(sp*Math.PI)*.8;x.fillStyle=k%3?'#ffe9a8':'#d9c2ff';cstar(x,((k*97)%100)/100*CW+Math.sin(t/700+k)*18,CH*(1.05-sp*1.15),5+((k*13)%7))}
+  x.globalAlpha=1;
+  const cap=(g.c&&g.c[i])||'';
+  if(cap){const fa=Math.max(0,Math.min(1,lt/350,(D-lt)/350+.35));x.globalAlpha=fa;x.font='700 38px Roboto,"Noto Sans Bengali","Noto Sans Devanagari",Arial,sans-serif';x.textAlign='center';
+    const words=cap.split(' '),lines=[''];words.forEach(wd=>{const c=lines[lines.length-1];if(x.measureText(c+' '+wd).width>1080)lines.push(wd);else lines[lines.length-1]=(c+' '+wd).trim()});
+    x.fillStyle='rgba(0,0,0,.5)';x.fillRect(0,CH-80-lines.length*48,CW,lines.length*48+46);x.fillStyle='#fff';lines.forEach((ln,k)=>x.fillText(ln,CW/2,CH-62-(lines.length-1-k)*48));x.globalAlpha=1}
+  x.font='600 22px Georgia,serif';x.textAlign='right';x.fillStyle='rgba(255,255,255,.78)';x.fillText('✦ Luxy AI',CW-24,CH-24);
+  x.fillStyle='rgba(232,196,106,.95)';x.fillRect(0,CH-6,CW*Math.min(1,t/(D*n)),6);
+}
+const clipTotal=g=>g.sec?g.sec*1000:g.f.length*3500;
+function clipPlayer(w,g){
+  const G=GM[lang];
+  if(!g.f||!g.f.length){w.innerHTML='<div class="act" style="opacity:.7">🎬 —</div>';return}
+  w.innerHTML='<div class="vbox"><canvas width="1280" height="720"></canvas><span class="vtime"></span></div><div class="act"><button data-p>'+G.play+'</button><button data-v>'+G.save+'</button></div>';
+  const cv=w.querySelector('canvas'),x=cv.getContext('2d'),tm=w.querySelector('.vtime'),total=clipTotal(g);
+  clipLoad(g).then(im=>clipFrame(x,im,g,0));
+  w.querySelector('[data-p]').onclick=async()=>{const my=++clipRun;try{speechSynthesis.cancel()}catch(e){}const im=await clipLoad(g),t0=performance.now();let last=-1;
+    await new Promise(res=>{(function fr(){if(my!==clipRun)return res();const t=Math.min(total,performance.now()-t0);clipFrame(x,im,g,t);tm.textContent=(t/1000).toFixed(1)+' / '+(total/1000).toFixed(0)+'s';
+      const i=Math.min(im.length-1,Math.floor(t/(total/im.length)));if(i!==last){last=i;if(g.c&&g.c[i])speak(g.c[i],g.l)}
+      if(t<total)requestAnimationFrame(fr);else res()})()})};
+  w.querySelector('[data-v]').onclick=async e=>{const b=e.target;b.textContent=G.prep;try{saveFile(await makeVideo(g),'luxy-clip.webm')}catch(x){alert(G.vidf)}b.textContent=G.save};
+}
+async function makeVideo(g){
+  const imgs=await clipLoad(g);if(TAINT.has(g))throw new Error('cors');
+  const cv=document.createElement('canvas');cv.width=CW;cv.height=CH;const x=cv.getContext('2d');
+  const mt=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(t=>window.MediaRecorder&&MediaRecorder.isTypeSupported(t));if(!mt)throw new Error('norec');
+  const rec=new MediaRecorder(cv.captureStream(30),{mimeType:mt,videoBitsPerSecond:5e6}),ch=[];rec.ondataavailable=e=>{if(e.data.size)ch.push(e.data)};
+  const done=new Promise(r=>rec.onstop=r),total=clipTotal(g);clipFrame(x,imgs,g,0);rec.start();const t0=performance.now();
+  await new Promise(res=>{(function fr(){const t=Math.min(total,performance.now()-t0);clipFrame(x,imgs,g,t);if(t<total)requestAnimationFrame(fr);else res()})()});
+  await sleep(150);rec.stop();await done;return new Blob(ch,{type:'video/webm'});
+}
+async function loadSeq(urls,alt){
+  const out=new Array(urls.length).fill(null);let k=0;
+  const w=async()=>{while(k<urls.length){const i=k++;for(let t=0;t<3&&!out[i];t++){const u=t?alt(i,t):urls[i];try{await loadImg(u,90000);out[i]=u}catch(e){await sleep(1500*(t+1))}}}};
+  await Promise.all([w(),w()]);return out;
+}
+async function genClip(mk,um,G,l,seed){
+  if(mk.k==='photoanim'){const f=um.imgs.slice(0,5),sec=mk.sec||6;return{t:CLIPT[l].replace('{s}',sec),gen:{k:'video',f,c:f.map(()=>''),mv:['zoomin','panright','zoomout','panleft','drift'].slice(0,f.length),l,sec}}}
+  const nm={en:'English',bn:'Bengali',hi:'Hindi'},sec=Math.max(3,Math.min(10,mk.sec||8)),N=sec<=4?2:sec<=6?3:sec<=8?4:5;let board=null;
+  try{const o=await llm([{role:'system',content:'You are an animation director. Plan a '+sec+'-second animated clip made of exactly '+N+' shots. Reply ONLY with a JSON array of '+N+' objects like {"image":"detailed English image prompt, same art style, same subject and colours in every shot, no text inside the picture","move":"one of zoomin|zoomout|panleft|panright|tiltup|tiltdown|drift","caption":"very short caption in '+nm[l]+' (max 8 words) or empty string"}. The shots tell one tiny story: beginning, change, ending. No other text.'},{role:'user',content:mk.p}],null,'openai');
+    const j=JSON.parse(o.match(/\[[\s\S]*\]/)[0]);if(Array.isArray(j)&&j.length>=2)board=j.slice(0,N)}catch(e){}
+  if(!board){const p=await enPrompt(mk.p);board=['wide establishing shot','close-up detail','dynamic action shot','dramatic final shot','golden glowing finale'].slice(0,N).map(s=>({image:p+', '+s,caption:'',move:''}))}
+  const us=board.map((b,i)=>imgUrl(b.image+', cinematic, high quality, no text',1280,720,seed+i));
+  const got=await loadSeq(us,(i,t)=>imgUrl(board[i].image+', cinematic, no text',1280,720,seed+100*t+i));
+  const f=[],c=[],mv=[];got.forEach((u,i)=>{if(u){f.push(u);c.push(String(board[i].caption||'').slice(0,80));mv.push(board[i].move||'')}});
+  if(f.length<2)throw new Error('frames');
+  return{t:CLIPT[l].replace('{s}',sec),gen:{k:'video',f,c,mv,l,sec}};
+}
+
+
+/* ---- Comic books and long videos (up to 30 min) ---- */
+(function(){
+const LN={en:'English',bn:'Bengali',hi:'Hindi'},W=new WeakMap(),ACT=new Set();
+const T={en:{c:'Your comic book is being drawn 📖 Pages appear below as they are ready.',v:'Your video is being prepared 🎬 Tap ▶ as soon as the first scenes are ready.',f:'I could not plan that right now. Please try again in a minute.',cut:'Generation was interrupted. Send the request again to restart.',busy:'The AI was busy, so the rest could not be written. Send the request again to retry.'},
+bn:{c:'আপনার কমিক বই আঁকা হচ্ছে 📖 পৃষ্ঠা তৈরি হলেই নিচে দেখা যাবে।',v:'আপনার ভিডিও তৈরি হচ্ছে 🎬 প্রথম দৃশ্য তৈরি হলেই ▶ চাপুন।',f:'এখন পরিকল্পনা করতে পারলাম না। এক মিনিট পরে আবার চেষ্টা করুন।',cut:'কাজটি মাঝপথে থেমে গেছে। আবার অনুরোধ পাঠান।',busy:'AI ব্যস্ত ছিল, তাই বাকি অংশ লেখা যায়নি। আবার অনুরোধ পাঠান।'},
+hi:{c:'आपकी कॉमिक बुक बनाई जा रही है 📖 पन्ने तैयार होते ही नीचे दिखेंगे।',v:'आपका वीडियो तैयार हो रहा है 🎬 पहले दृश्य बनते ही ▶ दबाएँ।',f:'अभी योजना नहीं बन सकी। एक मिनट बाद फिर कोशिश करें।',cut:'काम बीच में रुक गया। अनुरोध फिर भेजें।',busy:'AI व्यस्त था, इसलिए बाकी हिस्सा नहीं लिखा जा सका। अनुरोध फिर भेजें।'}};
+async function ask(sys,user){
+  const m=[{role:'system',content:sys},{role:'user',content:user}];
+  for(const md of['openai','mistral']){try{return await llm(m,null,md)}catch(e){}}
+  throw new Error('busy');
+}
+function pj(t){t=t.replace(/```json|```/g,'');const a=t.search(/[\[{]/);if(a<0)return null;const e=Math.max(t.lastIndexOf('}'),t.lastIndexOf(']'));try{return JSON.parse(t.slice(a,e+1))}catch(x){return null}}
+async function askJ(sys,user){for(let i=0;i<3;i++){try{const r=pj(await ask(sys+'\nReply with valid JSON only, no other text.',user));if(r)return r}catch(e){}}return null}
+const IQ=[];let iq=0;
+function lazy(el,url){el.classList.add('zld');IQ.push({el,url,t:0});pump()}
+function pump(){while(iq<2&&IQ.length){const j=IQ.shift();iq++;const im=new Image();
+  im.onload=()=>{iq--;j.el.src=j.url;j.el.classList.remove('zld');pump()};
+  im.onerror=()=>{iq--;if(j.t++<3)setTimeout(()=>{IQ.push(j);pump()},2500*j.t);else{j.el.classList.remove('zld');j.el.style.opacity='.35'}pump()};
+  im.src=j.url}}
+const vimg=u=>new Promise(r=>{const im=new Image();let d=0;const f=ok=>{if(!d){d=1;r(ok?u:null)}};im.onload=()=>f(1);im.onerror=()=>f(0);setTimeout(()=>f(0),25000);im.src=u});
+function speakWait(t,l){return new Promise(res=>{
+  const words=String(t).split(/\s+/).length;
+  if(!('speechSynthesis' in window)){setTimeout(res,Math.max(3000,words*400));return}
+  speak(t,l);const max=Math.max(6000,words*700)+4000,t0=Date.now();
+  (function chk(){if(Date.now()-t0>max||(!speechSynthesis.speaking&&!speechSynthesis.pending&&Date.now()-t0>800))return res();setTimeout(chk,250)})()})}
+const draw=g=>{const w=W.get(g);if(w&&w.isConnected)zAttach(w,g)};
+const base=(mk,um,k)=>({k,topic:mk.p,l:detect(um.t)||lang,done:false,status:'',err:''});
+window.genComic=async function(mk,um){
+  const g=base(mk,um,'comic'),P=mk.n||6;
+  const o=await askJ('You are a comic book writer. Plan a comic book. JSON: {"title":str,"style":str (one-line art style in English, e.g. vibrant manga colour),"characters":[{"name":str,"look":str (English appearance)}],"beats":[str] (exactly '+P+' items, one per page, 1-2 sentences each)}. Write title and beats in '+LN[g.l]+'.',mk.p);
+  if(!o||!o.beats||!o.beats.length)throw new Error('plan');
+  Object.assign(g,{title:o.title||'Comic',style:o.style||'colorful comic art',chars:(o.characters||[]).map(c=>c.name+': '+c.look).join('; '),total:P,pages:[]});
+  bgComic(g,o.beats);
+  return{t:T[g.l].c,gen:g};
+};
+async function bgComic(g,beats){
+  ACT.add(g);
+  try{for(let i=0;i<g.total;i+=2){
+    const sl=beats.slice(i,i+2);g.status='…'+(i+1)+'/'+g.total;draw(g);
+    const r=await askJ('You write comic book pages. Comic: "'+g.title+'". Characters: '+g.chars+'. Write exactly '+sl.length+' pages, each with 3 to 5 panels. JSON: {"pages":[{"panels":[{"caption":str (short narration, may be empty),"speech":[{"who":str,"text":str}] (max 2, short),"image":str (English description of the scene: characters, action, camera angle, setting)}]}]}. All readable text in '+LN[g.l]+'. Keep text short.','Pages '+(i+1)+' to '+(i+sl.length)+':\n'+sl.map((b,k)=>(i+k+1)+'. '+b).join('\n'));
+    const ps=(r&&(r.pages||r))||[];if(!ps.length){g.err=T[g.l].busy;break}
+    ps.forEach(p=>{if(p&&p.panels&&p.panels.length)g.pages.push(p)});draw(g);save();
+  }}catch(e){g.err=T[g.l].busy}
+  g.status='';g.done=true;ACT.delete(g);draw(g);save();
+}
+window.genLong=async function(mk,um){
+  const g=base(mk,um,'lvideo'),N=Math.min(180,Math.max(3,Math.ceil(mk.n*3)));
+  const o=await askJ('You are a video producer. Plan a '+mk.n+'-minute video. JSON: {"title":str,"style":str (one-line visual style in English),"characters":[{"name":str,"look":str}] (may be empty),"beats":[str] (exactly '+N+' items; each is one scene, one short sentence; the scenes follow a clear story or lesson from start to finish and never repeat)}. Write title and beats in '+LN[g.l]+'.',mk.p);
+  if(!o||!o.beats||!o.beats.length)throw new Error('plan');
+  const beats=o.beats.slice(0,N);while(beats.length<N)beats.push('Continue with new, different information that moves the story forward.');
+  Object.assign(g,{title:o.title||'Video',style:o.style||'cinematic',chars:(o.characters||[]).map(c=>c.name+': '+c.look).join('; '),total:N,mins:mk.n,scenes:[],pos:0});g.real=!/cartoon|anime|animat|3d|cgi|কার্টুন|कार्टून/i.test(mk.p);if(g.real)g.style='photorealistic live-action cinematography, '+g.style;
+  bgVideo(g,beats);
+  return{t:T[g.l].v,gen:g};
+};
+async function bgVideo(g,beats){
+  ACT.add(g);
+  try{for(let i=0;i<g.total;i+=8){
+    const sl=beats.slice(i,i+8);g.status='…'+(i+1)+'/'+g.total;draw(g);
+    const prev=g.scenes.length?'The previous narration ended with: "'+g.scenes[g.scenes.length-1].narration.slice(-150)+'"\n':'';
+    const r=await askJ('You write the spoken narration and visuals for a long video titled "'+g.title+'". Narration language: '+LN[g.l]+'. Each scene lasts about 20 seconds: write 45 to 55 spoken words of natural, engaging narration (no scene numbers, no stage directions, no emojis). Also give a vivid English image description for each scene. JSON: {"scenes":[{"narration":str,"image":str}]} with exactly '+sl.length+' scenes.',prev+'Scenes to write:\n'+sl.map((b,k)=>(i+k+1)+'. '+b).join('\n'));
+    const sc=(r&&(r.scenes||r))||[];if(!sc.length){g.err=T[g.l].busy;break}
+    sc.forEach(x=>{if(x&&x.narration)g.scenes.push({narration:String(x.narration),image:String(x.image||g.topic)})});draw(g);save();
+  }}catch(e){g.err=T[g.l].busy}
+  if(g.scenes.length<g.total)g.total=g.scenes.length;
+  g.status='';g.done=true;ACT.delete(g);draw(g);save();
+}
+const VP={id:0,pause:false,redo:false,cur:null};
+const sceneURL=(g,s,i)=>imgUrl(g.style+', cinematic, '+s.image+'. '+(g.chars||'')+(g.real?', photorealistic, shot on a professional cinema camera, natural lighting, sharp focus, ultra detailed, 8k':''),1024,576,300+i);
+window.zAttach=function(w,g){
+  W.set(g,w);
+  if(!g.done&&!ACT.has(g)){g.done=true;g.err=g.err||T[g.l||'en'].cut}
+  if(!w.querySelector('.zb')){w.innerHTML='<div class="zb"></div><div class="zs"></div>'}
+  const b=w.querySelector('.zb');
+  if(g.k==='comic')drawComic(g,b);else drawVideo(g,b);
+  w.querySelector('.zs').textContent=g.err?'⚠ '+g.err:(g.status||'');
+};
+function drawComic(g,b){
+  if(!g.pages)return;
+  if(!b.querySelector('.zt')){b.innerHTML='<div class="zt"></div><div class="zc"></div>'}
+  b.querySelector('.zt').textContent='📖 '+(g.title||'');
+  const box=b.querySelector('.zc');
+  if(!box.querySelector('[data-p="c"]')){const c=document.createElement('div');c.dataset.p='c';c.className='zp zcv';const im=document.createElement('img');im.alt='';c.appendChild(im);box.appendChild(c);lazy(im,imgUrl(g.style+', comic book cover art, '+g.title+'. '+g.chars,768,1024,7))}
+  g.pages.forEach((p,i)=>{
+    if(box.querySelector('[data-p="'+i+'"]'))return;
+    const d=document.createElement('div');d.dataset.p=i;d.className='zp';
+    p.panels.forEach((pn,k)=>{
+      const e=document.createElement('div');e.className='zn';
+      const im=document.createElement('img');im.alt='';e.appendChild(im);
+      if(pn.caption){const c=document.createElement('div');c.className='zcap';c.textContent=pn.caption;e.appendChild(c)}
+      if(pn.speech&&pn.speech.length){const s=document.createElement('div');s.className='zsp';pn.speech.slice(0,2).forEach(x=>{const t=document.createElement('span');t.textContent=(x.who?x.who+': ':'')+x.text;s.appendChild(t)});e.appendChild(s)}
+      d.appendChild(e);lazy(im,imgUrl(g.style+', comic panel, '+pn.image+'. '+g.chars,768,576,101+i*17+k*7));
+    });
+    box.appendChild(d);
+  });
+}
+function drawVideo(g,b){
+  if(!g.scenes)return;
+  if(!b.querySelector('.zv')){
+    b.innerHTML='<div class="zt"></div><div class="zv"><img class="za" alt=""><img class="zb2" alt=""><div class="zsub"></div></div><div class="zbar"><button class="zpl">▶</button><button class="zst">⏹</button><span class="zi"></span></div>';
+    b.querySelector('.zpl').onclick=()=>{const bt=b.querySelector('.zpl');
+      if(VP.cur===g&&bt.textContent==='⏸'){VP.pause=true;VP.redo=true;bt.textContent='▶';try{speechSynthesis.cancel()}catch(e){}}
+      else if(VP.cur===g&&VP.pause){VP.pause=false;bt.textContent='⏸'}
+      else play(g,b)};
+    b.querySelector('.zst').onclick=()=>{VP.id++;VP.cur=null;VP.pause=false;try{speechSynthesis.cancel()}catch(e){}b.querySelector('.zpl').textContent='▶';g.pos=0};
+  }
+  b.querySelector('.zt').textContent='🎬 '+(g.title||'')+(g.mins?' · ~'+g.mins+' min':'');
+  if(VP.cur!==g)b.querySelector('.zi').textContent=g.scenes.length+'/'+g.total+' ▶';
+}
+async function play(g,b){
+  const my=++VP.id;VP.cur=g;VP.pause=false;VP.redo=false;const q=s=>b.querySelector(s);q('.zpl').textContent='⏸';
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen')}catch(e){}
+  let flip=false;
+  for(let i=g.pos||0;i<g.total;i++){
+    if(VP.id!==my)return;
+    while(!g.scenes[i]&&!g.done){q('.zi').textContent='… '+g.scenes.length+'/'+g.total;await sleep(1000);if(VP.id!==my)return}
+    const s=g.scenes[i];if(!s)break;g.pos=i;
+    const u=await vimg(sceneURL(g,s,i))||await vimg(sceneURL(g,s,i)+'1');
+    if(VP.id!==my)return;
+    const A=q(flip?'.zb2':'.za'),B=q(flip?'.za':'.zb2');flip=!flip;
+    if(u)A.src=u;A.style.animationDuration=Math.max(8,s.narration.split(/\s+/).length*.5)+'s';
+    A.classList.remove('on');void A.offsetWidth;A.classList.add('on');B.classList.remove('on');
+    q('.zsub').textContent=s.narration;q('.zi').textContent=(i+1)+'/'+g.total;
+    for(let k=1;k<=2;k++)if(g.scenes[i+k])vimg(sceneURL(g,g.scenes[i+k],i+k));
+    await speakWait(s.narration,g.l);
+    while(VP.pause&&VP.id===my)await sleep(300);
+    if(VP.id!==my)return;
+    if(VP.redo){VP.redo=false;i--;continue}
+  }
+  if(VP.id===my){VP.cur=null;g.pos=0;q('.zpl').textContent='▶';q('.zi').textContent='✓'}
+}
+})();
+
+/* ---- Backup / restore ---- */
+function snapshot(){return{v:1,t:Date.now(),chats:chats.map(c=>Object.assign({},c,{m:c.m.map(m=>Object.assign({},m,{imgs:[]}))})),notes:ls.get('luxy_notes',[]),todos:ls.get('luxy_todos',[]),name:ls.get('luxy_name','')}}
+function mergeData(d){
+  if(!d||!Array.isArray(d.chats))return;
+  d.chats.forEach(rc=>{const lc=chats.find(c=>c.id===rc.id);if(!lc)chats.push(rc);else if((rc.t||0)>(lc.t||0))chats[chats.indexOf(lc)]=rc});
+  if(!ls.get('luxy_notes',[]).length&&d.notes&&d.notes.length)ls.set('luxy_notes',d.notes);
+  if(!ls.get('luxy_todos',[]).length&&d.todos&&d.todos.length)ls.set('luxy_todos',d.todos);
+  if(!ls.get('luxy_name','')&&d.name)ls.set('luxy_name',d.name);
+  save();renderList();renderChat();
+}
+const syncSoon=()=>{};
+/* ---- Start choice: save on this device, or try with no history ---- */
+const MT={en:{title:'Welcome to Luxy AI',sub:'How would you like to use it?',save:'💾 Save my chats on this device',saveS:'Your chats stay on this phone and are here when you come back.',tr:'👻 Try with no history',trS:'Nothing is saved. Everything disappears when you close the app.',note:'You can change this any time. Export a backup to keep your chats safe or move them to another phone.',badge:'👻 No history',hist:'Chat history'},
+bn:{title:'Luxy AI-তে স্বাগতম',sub:'আপনি কীভাবে ব্যবহার করতে চান?',save:'💾 আমার চ্যাট এই ফোনে সংরক্ষণ করুন',saveS:'আপনার চ্যাট এই ফোনেই থাকবে, পরে আবার দেখতে পারবেন।',tr:'👻 হিস্টরি ছাড়া চেষ্টা করুন',trS:'কিছুই সংরক্ষিত হবে না। অ্যাপ বন্ধ করলে সব মুছে যাবে।',note:'এটি যেকোনো সময় বদলানো যায়। চ্যাট নিরাপদ রাখতে বা অন্য ফোনে নিতে ব্যাকআপ এক্সপোর্ট করুন।',badge:'👻 হিস্টরি নেই',hist:'চ্যাট হিস্টরি'},
+hi:{title:'Luxy AI में आपका स्वागत है',sub:'आप इसे कैसे इस्तेमाल करना चाहेंगे?',save:'💾 मेरी चैट इस फ़ोन में सेव करें',saveS:'आपकी चैट इसी फ़ोन में रहेगी और बाद में फिर मिलेगी।',tr:'👻 बिना हिस्ट्री के आज़माएँ',trS:'कुछ भी सेव नहीं होगा। ऐप बंद करते ही सब मिट जाएगा।',note:'इसे कभी भी बदल सकते हैं। चैट सुरक्षित रखने या दूसरे फ़ोन में ले जाने के लिए बैकअप एक्सपोर्ट करें।',badge:'👻 कोई हिस्ट्री नहीं',hist:'चैट हिस्ट्री'}};
+function modeUI(){const s=document.querySelector('header .t small');if(s)s.textContent=(HIST?'':MT[lang].badge+' · ')+'Made by Afraz Studio'}
+function applyMode(m){
+  const was=HIST;HIST=m!=='try';ls.set('luxy_mode',HIST?'save':'try');
+  if(HIST&&!was){ls.get('luxy_chats',[]).forEach(c=>{if(!chats.some(x=>x.id===c.id))chats.push(c)});save()}
+  modeUI();renderList();
+}
+function hideGate(){const g=$('#gate');if(g)g.style.display='none'}
+function showGate(){
+  let g=$('#gate');if(!g){g=document.createElement('div');g.id='gate';document.body.appendChild(g)}
+  const T=MT[lang];g.style.display='flex';
+  g.innerHTML='<div class="orb s"><i></i><i></i><i></i><b></b><em>L</em></div><div class="gl">Luxy AI</div><h2>'+T.title+'</h2><p>'+T.sub+'</p><div class="gb"><button class="pv2 big" data-a="save"><span>'+T.save+'</span><small>'+T.saveS+'</small></button><button class="pv2 big" data-a="try"><span>'+T.tr+'</span><small>'+T.trS+'</small></button></div><div class="gz"><button data-l="en">EN</button><button data-l="bn">বাং</button><button data-l="hi">हिं</button></div>';
+  g.onclick=e=>{const b=e.target.closest('[data-l],[data-a]');if(!b)return;
+    if(b.dataset.l){lang=b.dataset.l;ls.set('luxy_lang',lang);applyLang();showGate();return}
+    applyMode(b.dataset.a);ls.set('luxy_modeset',1);hideGate();renderChat()};
+}
+function bootAuth(){if(ls.get('luxy_modeset',0)){hideGate();modeUI()}else showGate()}
+function acctUI(){
+  const b=$('#acctbox');if(!b)return;const G=GM[lang],M=MT[lang];
+  b.innerHTML='<select id="shist"><option value="save">'+M.save+'</option><option value="try">'+M.tr+'</option></select><div class="arow"><button data-g="exp">'+G.exp+'</button><button data-g="imp">'+G.imp+'</button></div><small style="color:var(--mut)">'+M.note+'</small>';
+  $('#shist').value=HIST?'save':'try';
+  $('#shist').onchange=e=>applyMode(e.target.value);
+  b.onclick=e=>{const a=e.target.dataset&&e.target.dataset.g;if(a==='exp')saveFile(new Blob([JSON.stringify(snapshot())],{type:'application/json'}),'luxy-backup.json');if(a==='imp')$('#fImp').click()};
+}
+/* ---- Themes, modes, hero ---- */
+const THEMES=['midnight','aurora','sunrise'],TCOL={midnight:'#0d0a18',aurora:'#06141a',sunrise:'#fff7ee'};
+function setTheme(t){document.documentElement.dataset.theme=t;ls.set('luxy_theme',t);const m=document.querySelector('meta[name=theme-color]');if(m)m.content=TCOL[t]}
+setTheme(THEMES.indexOf(ls.get('luxy_theme','midnight'))<0?'midnight':ls.get('luxy_theme','midnight'));
+$('#theme').onclick=()=>setTheme(THEMES[(THEMES.indexOf(ls.get('luxy_theme','midnight'))+1)%3]);
+const MODES={auto:{i:'✨',n:{en:'Auto',bn:'অটো',hi:'ऑटो'},p:''},
+tutor:{i:'🎓',n:{en:'Tutor',bn:'শিক্ষক',hi:'शिक्षक'},p:'MODE TUTOR: teach step by step like a patient teacher, use an everyday analogy, and end with one tiny question to check understanding.'},
+sci:{i:'⚛️',n:{en:'Physics & Maths',bn:'পদার্থ ও গণিত',hi:'भौतिकी व गणित'},p:'MODE SCIENCE SOLVER: for every problem use the layout Given, Find, Formula, Solution, Answer, Meaning, with real symbols and units.'},
+coder:{i:'💻',n:{en:'Coder',bn:'কোডার',hi:'कोडर'},p:'MODE CODER: act as a senior software engineer: complete working code in code blocks, short explanation, edge cases, and how to run it.'},
+writer:{i:'✍️',n:{en:'Writer',bn:'লেখক',hi:'लेखक'},p:'MODE WRITER: deliver polished, natural text in the requested tone first, then offer a shorter or more formal version.'},
+creator:{i:'🎨',n:{en:'Creator',bn:'স্রষ্টা',hi:'क्रिएटर'},p:'MODE CREATOR: brainstorm vivid ideas. When the user wants a picture, animated clip or comic, give an improved prompt and the exact command to type, such as /image ... or /video ..., 10 seconds.'},
+biz:{i:'💼',n:{en:'Business',bn:'ব্যবসা',hi:'बिज़नेस'},p:'MODE BUSINESS: be concise and practical: options, trade-offs, a recommendation and next steps; professional tone.'}};
+let MODE=ls.get('luxy_mode2','auto');if(!MODES[MODE])MODE='auto';
+const modeP=()=>MODES[MODE]&&MODES[MODE].p?'\n'+MODES[MODE].p:'';
+function modesUI(){const m=$('#modes');if(!m)return;m.innerHTML='';Object.keys(MODES).forEach(k=>{const b=document.createElement('button');b.textContent=MODES[k].i+' '+MODES[k].n[lang];if(k===MODE)b.className='on';b.onclick=()=>{MODE=k;ls.set('luxy_mode2',k);modesUI()};m.appendChild(b)})}
+const CRT={en:[['🎨','Image','🎨 a golden dragon flying over snowy mountains at sunset, ultra detailed'],['🎬','10s clip','🎬 a paper boat sailing down a glowing night river, 10 seconds'],['📖','Comic','📖 a brave girl and her robot save a village, 4 pages']],
+bn:[['🎨','ছবি','🎨 সূর্যাস্তের সময় নদীতে একটি সোনালি নৌকা'],['🎬','১০ সেকেন্ড','🎬 রাতের ঝলমলে নদীতে একটি কাগজের নৌকা, 10 সেকেন্ড'],['📖','কমিক','📖 একটি সাহসী মেয়ে ও তার রোবট গ্রাম বাঁচায়, 4 পৃষ্ঠা']],
+hi:[['🎨','तस्वीर','🎨 सूर्यास्त के समय पहाड़ों के बीच एक सुंदर झील'],['🎬','10 सेकंड','🎬 रात की चमकती नदी में एक कागज़ की नाव, 10 सेकंड'],['📖','कॉमिक','📖 एक बहादुर लड़की और उसका रोबोट गाँव बचाते हैं, 4 पेज']]};
+const TAGS={en:['Ask me anything.','Pictures that move, up to 10 seconds.','Physics solved step by step.','Comics from one sentence.','English · বাংলা · हिन्दी'],bn:['যা খুশি জিজ্ঞাসা করুন।','১০ সেকেন্ড পর্যন্ত চলমান ছবি।','পদার্থবিজ্ঞান ধাপে ধাপে।','এক বাক্যে কমিক বই।','English · বাংলা · हिन्दी'],hi:['कुछ भी पूछिए।','10 सेकंड तक चलती तस्वीरें।','भौतिकी कदम-दर-कदम।','एक वाक्य से कॉमिक।','English · বাংলা · हिन्दी']};
+let tagT;
+function heroInit(){
+  const s=document.querySelector('#hero .strip');if(!s)return;
+  CRT[lang].forEach(([e,n,p])=>{const b=document.createElement('button');b.innerHTML='<b>'+e+'</b><span>'+n+'</span>';b.onclick=()=>{inp.value=p;inp.focus();inp.oninput&&inp.oninput()};s.appendChild(b)});
+  const tg=document.querySelector('#tagl'),L=TAGS[lang];let k=0;
+  const step=()=>{if(!document.body.contains(tg)){clearInterval(tagT);return}tg.style.opacity=0;setTimeout(()=>{tg.textContent=L[k++%L.length];tg.style.opacity=1},350)};
+  step();clearInterval(tagT);tagT=setInterval(step,2800);
+}
+
+$('#etest').onclick=async()=>{const t=$('#etx');t.textContent='…';const cu=$('#sceu').value.trim(),ck=$('#sck').value.trim();
+  try{if(!(cu&&ck)){t.textContent='Luxy AI works without any key. Fill the URL and key only if you want to add your own extra engine.';return}
+    const o=await llm([{role:'user',content:'Reply with the single word OK'}],null,$('#scm').value.trim()||'gpt-4o-mini',{url:cu,key:ck});t.textContent='✅ Your engine is connected: '+o.slice(0,30)}catch(e){t.textContent='❌ '+friendly(e)}};
+const BS={en:['Make Luxy AI far smarter in 1 minute with a free Google key.','Get free key','Paste it'],bn:['একটি বিনামূল্যের Google কী দিয়ে ১ মিনিটে Luxy AI-কে আরও স্মার্ট করুন।','ফ্রি কী নিন','পেস্ট করুন'],hi:['1 मिनट में मुफ़्त Google कुंजी से Luxy AI को और स्मार्ट बनाएँ।','मुफ़्त कुंजी लें','पेस्ट करें']};
+function boostInit(){const b=$('#boost');if(b)b.style.display='none'}
+
+$('#fImp').onchange=async e=>{try{mergeData(JSON.parse(await e.target.files[0].text()))}catch(x){}e.target.value=''};
+
+/* ---- self-update (daily) ---- */
+function otaBanner(){const d=document.createElement('div');d.className='ota';d.textContent=GM[lang].upd;d.onclick=()=>location.reload();document.body.appendChild(d)}
+async function otaCheck(){
+  try{localStorage.setItem('luxy_ota_ok','1')}catch(e){}
+  if(!OTA_ENABLED||UPDATE_URL.indexOf('YOUR-USER')>-1)return;
+  const d=new Date().toISOString().slice(0,10);if(ls.get('luxy_otaday','')===d)return;
+  try{
+    const r=await fetch(UPDATE_URL+'?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const t=await r.text();ls.set('luxy_otaday',d);
+    const v=+((t.match(/name="luxy-version" content="(\d+)"/)||[])[1]||0);
+    if(v>APP_VER&&v>(+localStorage.getItem('luxy_ota_ver')||0)&&t.length>20000&&t.indexOf('</html>')>0&&t.indexOf('Luxy AI')>0){localStorage.setItem('luxy_ota',t);localStorage.setItem('luxy_ota_ver',String(v));otaBanner()}
+  }catch(e){}
+}
+
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&(!cur||!cur.m.length)){dailyConfig().then(renderChat)}});
+dailyConfig();applyLang();micInit();acctUI();otaCheck();bootAuth();boostInit();
+</script>
+</body>
+</html>
